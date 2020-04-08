@@ -1,13 +1,5 @@
 #include	"CodeGenerator.h"
 
-typedef struct symbol_table {
-
-	/* Think! what does a symbol_table contain?
-	 * table_adress_counter is for tracking last variable adress, we start with adress 5
-	 * table_content is a pointer pointing to the head of the variables linked list */
-	int table_size,table_adress_counter=5;
-	Variable *table_content;
-} Symbol_table;
 
 typedef struct variable {
 
@@ -17,6 +9,17 @@ typedef struct variable {
 	struct variable *var_next,var_prev;
 } Variable;
 
+typedef struct symbol_table {
+
+	/* Think! what does a symbol_table contain?
+	 * table_adress_counter is for tracking last variable adress, we start with adress 5
+	 * table_content is a pointer pointing to the head of the variables linked list */
+	int table_size,table_adress_counter=5;
+	Variable *table_content;
+} Symbol_table;
+
+Symbol_table *table_head;
+
 /*
 *	You need to build a data structure for the symbol table
 *	I recommend to use linked list.
@@ -24,6 +27,80 @@ typedef struct variable {
 *	You also need to build some functions that add/remove/find element in the symbol table
 */
 
+Variable* findVarByName(Variable *head,char *var_name){
+	if(head==null){
+		return null;
+	}
+	if(strcmp(head->var_name,var_name)==0) return head;
+	return findVarByName(head->var_next,var_name);
+}
+
+Variable* findVarByAdress(Variable *head,char *var_adress){
+	if(head==null){
+		return null;
+	}
+	if(head->var_adress==var_adress) return head;
+	return findVarByName(head->var_next,var_adress);
+}
+
+void insertVar(Variable head,Variable *new_var){
+
+	int i=0;
+	Variable *tmp=head;
+	if(new_var == null)
+		return;
+
+	if(head == null){
+		table_head=new_var;
+		return;
+	}
+
+	if(findVarByName(head,new_var->var_name) != null)
+		return;
+	for(i=0;i<table_head->table_size;i++){
+		if(tmp->var_next==null)
+			break;
+		tmp=tmp->var_next;
+	}
+	if(tmp != null){
+		tmp->var_next=new_var;
+		new_var->var_prev=tmp;
+	}
+	return;
+}
+
+Variable * createVar(char *var_name,char *var_type,int var_size,int var_adress,Variable *var_next,Variable *var_prev){
+
+	Variable *new_var;
+	new_var=(Variable *)malloc(sizeof(Variable));
+	if(new_var == null){
+		printf("Couldn't allocate memory, variable was not created!");
+		return null;
+	}
+	new_var->var_name=var_name;
+	new_var->var_type=var_type;
+	new_var->var_adress=var_adress;
+	new_var->var_size=var_size;
+	new_var->var_next=var_next;
+	new_var->var_prev=var_prev;
+	return new_var;
+}
+
+int removeVar(Variable var_to_remove){
+	if(var_to_remove == null)
+		return -1;
+	Variable *tmp_next=var_to_remove->var_next,*tmp_prev=var_to_remove->var_prev;
+	free(var_to_remove->var_name);
+	free(var_to_remove->var_type);
+	if(var_to_remove->var_adress == table_head->table_content->var_adress)
+		table_head=null;
+	free(var_to_remove);
+	if(tmp_next != null)
+		tmp_next->var_prev=tmp_prev;
+	if(tmp_prev != null)
+		tmp_prev->var_next=tmp_next;
+	return 1;
+}
 
 /*
 *	This recursive function is the main method for Code Generation
