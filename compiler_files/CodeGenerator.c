@@ -2,14 +2,19 @@
 
 typedef struct symbol_table {
 
-	/* Think! what does a symbol_table contain? */
-
+	/* Think! what does a symbol_table contain?
+	 * table_adress_counter is for tracking last variable adress, we start with adress 5
+	 * table_content is a pointer pointing to the head of the variables linked list */
+	int table_size,table_adress_counter=5;
+	Variable *table_content;
 } Symbol_table;
 
 typedef struct variable {
 
 	/* Think! what does a Variable contain? */
-
+	char *var_name,*var_type;
+	int var_adress,var_size;
+	struct variable *var_next,var_prev;
 } Variable;
 
 /*
