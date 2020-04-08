@@ -72,6 +72,7 @@ int  code_recur(treenode *root)
 					*	In order to get the int value you have to use: 
 					*	leaf->data.ival 
 					*/
+					printf("ldc %d\n", leaf->data.ival);
 					break;
 
 				case TN_REAL:
@@ -439,83 +440,97 @@ int  code_recur(treenode *root)
 					  	  /* Plus token "+" */
 						  code_recur(root->lnode);
 						  code_recur(root->rnode);
+						  printf("add\n");
 						  break;
 
 					  case MINUS:
 					  	  /* Minus token "-" */
 						  code_recur(root->lnode);
 						  code_recur(root->rnode);
+						  printf("sub\n");
 						  break;
 
 					  case DIV:
 					  	  /* Divide token "/" */
 						  code_recur(root->lnode);
 						  code_recur(root->rnode);
+						  printf("div\n");
 						  break;
 
 					  case STAR:
 					  	  /* multiply token "*" */
 						  code_recur(root->lnode);
 						  code_recur(root->rnode);
+						  printf("mul\n");
 						  break;
 
 					  case AND:
 					  	  /* And token "&&" */
 						  code_recur(root->lnode);
 						  code_recur(root->rnode);
+						  printf("and\n");
 						  break;
 
 					  case OR:
 					  	  /* Or token "||" */
 						  code_recur(root->lnode);
 						  code_recur(root->rnode);
+						  printf("or\n");
 						  break;
 						
 					  case NOT:
 					  	  /* Not token "!" */
 						  code_recur(root->lnode);
 						  code_recur(root->rnode);
+						  printf("not\n");
 						  break;
 
 					  case GRTR:
 					  	  /* Greater token ">" */
 						  code_recur(root->lnode);
 						  code_recur(root->rnode);
+						  printf("grt\n");
 						  break;
 
 					  case LESS:
 					  	  /* Less token "<" */
 						  code_recur(root->lnode);
 						  code_recur(root->rnode);
+						  printf("les\n");
 						  break;
 						  
 					  case EQUAL:
 					  	  /* Equal token "==" */
 						  code_recur(root->lnode);
 						  code_recur(root->rnode);
+						  printf("equ\n");
 						  break;
 
 					  case NOT_EQ:
 					  	  /* Not equal token "!=" */
 						  code_recur(root->lnode);
 						  code_recur(root->rnode);
+						  printf("neq\n");
 						  break;
 
 					  case LESS_EQ:
 					  	  /* Less or equal token "<=" */
 						  code_recur(root->lnode);
 						  code_recur(root->rnode);
+						  printf("leq\n");
 						  break;
 
 					  case GRTR_EQ:
 					  	  /* Greater or equal token ">=" */
 						  code_recur(root->lnode);
 						  code_recur(root->rnode);
+						  printf("geq\n");
 						  break;
 
 					  default:
 						code_recur(root->lnode);
 						code_recur(root->rnode);
+						printf("ldc\n");
 						break;
 					}
 					break;
