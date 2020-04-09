@@ -471,30 +471,43 @@ int  code_recur(treenode *root)
 						/* e.g. x = 5; */
 						code_recur(root->lnode);
 						code_recur(root->rnode);
+						printf("sto/n");
 					}
 					else if (root->hdr.tok == PLUS_EQ){
 						/* Plus equal assignment "+=" */
-						/* e.g. x += 5; */
+						/* e.g. x += 5; */  
+						code_recur(root->lnode);
 						code_recur(root->lnode);
 						code_recur(root->rnode);
+						printf("add/n");
+						printf("sto/n");
 					}
 					else if (root->hdr.tok == MINUS_EQ){
 						/* Minus equal assignment "-=" */
 						/* e.g. x -= 5; */
 						code_recur(root->lnode);
+						code_recur(root->lnode);
 						code_recur(root->rnode);
+						printf("sub/n");
+						printf("sto/n");
 					}
 					else if (root->hdr.tok == STAR_EQ){
 						/* Multiply equal assignment "*=" */
 						/* e.g. x *= 5; */
 						code_recur(root->lnode);
+						code_recur(root->lnode);
 						code_recur(root->rnode);
+						printf("mul/n");
+						printf("sto/n");
 					}
 					else if (root->hdr.tok == DIV_EQ){
 						/* Divide equal assignment "/=" */
 						/* e.g. x /= 5; */
 						code_recur(root->lnode);
+						code_recur(root->lnode);
 						code_recur(root->rnode);
+						printf("div/n");
+						printf("sto/n");
 					}
 					break;
 
