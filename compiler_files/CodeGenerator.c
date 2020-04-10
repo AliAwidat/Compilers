@@ -26,7 +26,26 @@ int label_counter=1;
 *
 *	You also need to build some functions that add/remove/find element in the symbol table
 */
-
+int getAddressOfVariable(char* var_name)
+{
+    Variable* temp = head;
+     while(temp)
+     {
+        if(strcmp(var_name , temp->var_name) == 0)
+        {
+            return temp->var_adress;
+        }
+        temp = temp->var_next;
+    }
+    return -1;
+}
+Variable* findVarByName(Variable *head,char *var_name){
+	if(head==null){
+		return null;
+	}
+	if(strcmp(head->var_name,var_name)==0) return head;
+	return findVarByName(head->var_next,var_name);
+}
 Variable* findVarByName(Variable *head,char *var_name){
 	if(head==NULL){
 		return NULL;
@@ -113,9 +132,11 @@ int removeVar(Variable *var_to_remove){
 */
 int  code_recur(treenode *root)
 {
+	int test ;
 	if_node  *ifn;
 	for_node *forn;
 	leafnode *leaf;
+	 Variable* t;
 	
     if (!root)
         return SUCCESS;
@@ -134,6 +155,12 @@ int  code_recur(treenode *root)
 					*	In order to get the identifier name you have to use:
 					*	leaf->data.sval->str
 					*/
+				   test = getAddressOfVariable(leaf->data.sval->str);
+			            if( test != -1)
+			            {
+		                     printf("ldc %d\n" ,test );
+		                     printf("ind\n");
+		        		}
 					break;
 
 				case TN_COMMENT:
@@ -488,32 +515,60 @@ int  code_recur(treenode *root)
 					if(root->hdr.tok == EQ){
 						/* Regular assignment "=" */
 						/* e.g. x = 5; */
-						code_recur(root->lnode);
+						leaf = (leafnode*)root->lnode;
+                                               test = getAddressOfVariable(leaf->data.sval->str);
+                                               if( test != -1)
+                                                    printf("ldc %d\n" ,test );
 						code_recur(root->rnode);
 					}
 					else if (root->hdr.tok == PLUS_EQ){
 						/* Plus equal assignment "+=" */
 						/* e.g. x += 5; */
+					     leaf = (leafnode*)root->lnode;
+					    test = getAddressOfVariable(leaf->data.sval->str);
+					    if( test !=-1)
+					      printf("ldc %d\n" ,test );
 						code_recur(root->lnode);
 						code_recur(root->rnode);
+						printf("add\n");
+					         printf("sto\n");
 					}
 					else if (root->hdr.tok == MINUS_EQ){
 						/* Minus equal assignment "-=" */
 						/* e.g. x -= 5; */
-						code_recur(root->lnode);
-						code_recur(root->rnode);
+					leaf = (leafnode*)root->lnode;
+				        test = getAddressOfVariable(leaf->data.sval->str);
+				        if( test != -1)
+				             printf("ldc %d\n" ,test );
+				        code_recur(root->lnode);
+				        code_recur(root->rnode);
+				        printf("sub\n");
+				        printf("sto\n");
+					   
 					}
 					else if (root->hdr.tok == STAR_EQ){
 						/* Multiply equal assignment "*=" */
 						/* e.g. x *= 5; */
-						code_recur(root->lnode);
-						code_recur(root->rnode);
+					    leaf = (leafnode*)root->lnode;
+					    test = getAddressOfVariable(leaf->data.sval->str);
+					    if( test != -1)
+					    	printf("ldc %d\n" ,test );
+	     		                     code_recur(root->lnode);
+	     		                     code_recur(root->rnode);
+				             printf("mul\n");
+				             printf("sto\n");
 					}
 					else if (root->hdr.tok == DIV_EQ){
 						/* Divide equal assignment "/=" */
 						/* e.g. x /= 5; */
-						code_recur(root->lnode);
-						code_recur(root->rnode);
+			        	leaf = (leafnode*)root->lnode;
+					test = getAddressOfVariable(leaf->data.sval->str);
+    			                if( test != -1)
+    			        	   printf("ldc %d\n" ,test );
+				           code_recur(root->lnode);
+				           code_recur(root->rnode);
+				           printf("div\n");
+				           printf("sto\n");
 					}
 					break;
 
@@ -526,15 +581,67 @@ int  code_recur(treenode *root)
 						  break;
 
 					  case INCR:
-						  /* Increment token "++" */
-						  code_recur(root->lnode);
-						  code_recur(root->rnode);
+				           if(root->lnode)
+					   {
+			      		   leaf = (leafnode*)root->lnode;
+	                                   test = getAddressOfVariable(leaf->data.sval->str);
+	                                   if( test != -1)
+	                                   {
+	                        	   printf("ldc %d\n" ,test );
+	                        	   printf("ind\n");
+	                        	   printf("ldc %d\n" ,test );
+	                        	   printf("ldc %d\n" ,test );
+	                        	   printf("ind\n");
+	                        	   printf("inc\n");
+					   printf("sto\n");
+                                           }
+                                          }
+					  else {
+				             leaf = (leafnode*)root->rnode;
+				             test = getAddressOfVariable(leaf->data.sval->str);
+                                            if( test != -1)
+	                                     {
+	                            	         printf("ldc %d\n" ,test );
+					         printf("ldc %d\n" ,test );
+					         printf("ind\n");
+			                         printf("inc\n");
+				                 printf("sto\n");
+				                 printf("ldc %d\n" ,test );
+				                 printf("ind\n");
+                                              }
+			                   }
 						  break;
 
 					  case DECR:
 						  /* Decrement token "--" */
-						  code_recur(root->lnode);
-						  code_recur(root->rnode);
+						  if(root->lnode)
+						  {
+					         leaf = (leafnode*)root->lnode;
+					         test = getAddressOfVariable(leaf->data.sval->str);
+					    if( test != -1)
+						 {
+						      printf("ldc %d\n" ,test );
+					              printf("ind\n");
+					              printf("ldc %d\n" ,test );
+					              printf("ldc %d\n" ,test );
+					              printf("ind\n");
+					              printf("dec\n");
+					              printf("sto\n");
+						  }
+                                               }
+					        else {
+					        	leaf = (leafnode*)root->rnode;
+					        	test = getAddressOfVariable(leaf->data.sval->str);
+					            if( test != -1)
+					            {
+					            	printf("ldc %d\n" ,test );
+					                printf("ldc %d\n" ,test );
+				                        printf("ind\n");
+                                                        printf("dec\n");				                                printf("sto\n");
+					                printf("ldc %d\n" ,test );
+					                printf("ind\n");
+					             }
+			                          }
 						  break;
 
 					  case PLUS:
@@ -546,9 +653,16 @@ int  code_recur(treenode *root)
 
 					  case MINUS:
 					  	  /* Minus token "-" */
+						if((leafnode*)root->lnode)
+						  {
 						  code_recur(root->lnode);
 						  code_recur(root->rnode);
 						  printf("sub\n");
+						  }
+						  else {
+							   code_recur(root->rnode);
+							    printf("neg\n");
+						  }
 						  break;
 
 					  case DIV:
