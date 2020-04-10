@@ -1,12 +1,11 @@
 #include	"CodeGenerator.h"
 
-
 typedef struct variable {
 
 	/* Think! what does a Variable contain? */
 	char *var_name,*var_type;
 	int var_adress,var_size;
-	struct variable *var_next,var_prev;
+	struct variable *var_next,*var_prev;
 } Variable;
 
 typedef struct symbol_table {
@@ -14,12 +13,13 @@ typedef struct symbol_table {
 	/* Think! what does a symbol_table contain?
 	 * table_adress_counter is for tracking last variable adress, we start with adress 5
 	 * table_content is a pointer pointing to the head of the variables linked list */
-	int table_size,table_adress_counter=5;
+	int table_size;
+	int table_adress_counter;
 	Variable *table_content;
 } Symbol_table;
 
-Symbol_table *table_head;
-
+Symbol_table *table;
+int label_counter=1;
 /*
 *	You need to build a data structure for the symbol table
 *	I recommend to use linked list.
@@ -28,41 +28,44 @@ Symbol_table *table_head;
 */
 
 Variable* findVarByName(Variable *head,char *var_name){
-	if(head==null){
-		return null;
+	if(head==NULL){
+		return NULL;
 	}
 	if(strcmp(head->var_name,var_name)==0) return head;
 	return findVarByName(head->var_next,var_name);
 }
 
 Variable* findVarByAdress(Variable *head,char *var_adress){
-	if(head==null){
-		return null;
+	if(head==NULL){
+		return NULL;
 	}
-	if(head->var_adress==var_adress) return head;
+	if(((int)head->var_adress)==var_adress) return head;
 	return findVarByName(head->var_next,var_adress);
 }
 
-void insertVar(Variable head,Variable *new_var){
+void insertVar(Variable *head,Variable *new_var){
 
 	int i=0;
 	Variable *tmp=head;
-	if(new_var == null)
+	if(new_var == NULL)
 		return;
 
-	if(head == null){
-		table_head=new_var;
+	if(head == NULL){
+		if(table == NULL){
+			table=(Symbol_table *)malloc(sizeof(Symbol_table));
+		}
+		table->table_content=new_var;
 		return;
 	}
 
-	if(findVarByName(head,new_var->var_name) != null)
+	if(findVarByName(head,new_var->var_name) != NULL)
 		return;
-	for(i=0;i<table_head->table_size;i++){
-		if(tmp->var_next==null)
+	for(i=0;i<table->table_size;i++){
+		if(tmp->var_next==NULL)
 			break;
 		tmp=tmp->var_next;
 	}
-	if(tmp != null){
+	if(tmp != NULL){
 		tmp->var_next=new_var;
 		new_var->var_prev=tmp;
 	}
@@ -73,9 +76,9 @@ Variable * createVar(char *var_name,char *var_type,int var_size,int var_adress,V
 
 	Variable *new_var;
 	new_var=(Variable *)malloc(sizeof(Variable));
-	if(new_var == null){
+	if(new_var == NULL){
 		printf("Couldn't allocate memory, variable was not created!");
-		return null;
+		return NULL;
 	}
 	new_var->var_name=var_name;
 	new_var->var_type=var_type;
@@ -86,18 +89,19 @@ Variable * createVar(char *var_name,char *var_type,int var_size,int var_adress,V
 	return new_var;
 }
 
-int removeVar(Variable var_to_remove){
-	if(var_to_remove == null)
+int removeVar(Variable *var_to_remove){
+	if(var_to_remove == NULL)
 		return -1;
-	Variable *tmp_next=var_to_remove->var_next,*tmp_prev=var_to_remove->var_prev;
+	Variable *tmp_next=var_to_remove->var_next;
+	Variable *tmp_prev=var_to_remove->var_prev;
 	free(var_to_remove->var_name);
 	free(var_to_remove->var_type);
-	if(var_to_remove->var_adress == table_head->table_content->var_adress)
-		table_head=null;
+	if(var_to_remove->var_adress == table->table_content->var_adress)
+		table->table_content=NULL;
 	free(var_to_remove);
-	if(tmp_next != null)
+	if(tmp_next != NULL)
 		tmp_next->var_prev=tmp_prev;
-	if(tmp_prev != null)
+	if(tmp_prev != NULL)
 		tmp_prev->var_next=tmp_next;
 	return 1;
 }
@@ -175,13 +179,21 @@ int  code_recur(treenode *root)
 				if (ifn->else_n == NULL) {
 					/* if case (without else)*/
 					code_recur(ifn->cond);
+					printf("fjp label%d\n",label_counter);
 					code_recur(ifn->then_n);
+					printf("label%d:\n",label_counter);
+					label_counter++;
 				}
 				else {
 					/* if - else case*/ 
 					code_recur(ifn->cond);
+					printf("fjp label%d\n",label_counter);
 					code_recur(ifn->then_n);
+					printf("ujp label%d\n",label_counter+1);
+					printf("label%d:\n",label_counter);
 					code_recur(ifn->else_n);
+					label_counter++;
+					printf("label%d:\n",label_counter);
 				}
 				break;
 				
