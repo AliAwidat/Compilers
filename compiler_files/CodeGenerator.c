@@ -39,13 +39,7 @@ int getAddressOfVariable(char* var_name)
     }
     return -1;
 }
-Variable* findVarByName(Variable *head,char *var_name){
-	if(head==null){
-		return null;
-	}
-	if(strcmp(head->var_name,var_name)==0) return head;
-	return findVarByName(head->var_next,var_name);
-}
+
 Variable* findVarByName(Variable *head,char *var_name){
 	if(head==NULL){
 		return NULL;
