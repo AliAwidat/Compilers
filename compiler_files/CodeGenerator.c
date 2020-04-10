@@ -39,7 +39,7 @@ Variable* findVarByAdress(Variable *head,char *var_adress){
 	if(head==NULL){
 		return NULL;
 	}
-	if(((int)head->var_adress)==var_adress) return head;
+	if(head->var_adress==var_adress) return head;
 	return findVarByName(head->var_next,var_adress);
 }
 
@@ -200,8 +200,13 @@ int  code_recur(treenode *root)
 			case TN_COND_EXPR:
 				/* (cond)?(exp):(exp); */
 				code_recur(ifn->cond);
+				printf("fjp label%d\n",label_counter);
 				code_recur(ifn->then_n);
+				printf("ujp label%d\n",label_counter+1);
+				printf("label%d:\n",label_counter);
 				code_recur(ifn->else_n);
+				label_counter++;
+				printf("label%d:\n",label_counter);
 				break;
 
 			default:
@@ -631,14 +636,24 @@ int  code_recur(treenode *root)
 
 				case TN_WHILE:
 					/* While case */
+					printf("fjp lable%d\n",label_counter);
 					code_recur(root->lnode);
+					printf("fjp lable%d\n",label_counter+1);
 					code_recur(root->rnode);
+					printf("ujp lable%d\n",label_counter);
+					label_counter++;
+					printf("lable%d\n",label_counter);
 					break;
 
 				case TN_DOWHILE:
 					/* Do-While case */
+					printf("lable%d\n",label_counter);
 					code_recur(root->rnode);
 					code_recur(root->lnode);
+					printf("fjp lable%d\n",label_counter+1);
+					printf("ujp lable%d\n",label_counter);
+					label_counter++;
+					printf("lable%d\n",label_counter);
 					break;
 
 				case TN_LABEL:
