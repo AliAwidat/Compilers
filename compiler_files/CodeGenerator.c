@@ -167,6 +167,7 @@ int  code_recur(treenode *root)
 					*	In order to get the real value you have to use:
 					*	leaf->data.dval
 					*/
+					printf("ldc %lf\n", leaf->data.ival);
 					break;
 			}
 			break;
@@ -284,6 +285,7 @@ int  code_recur(treenode *root)
 						/* the currentNode->right->right sub tree */
 						/* Look at the output AST structure! */
 						code_recur(root->rnode->rnode);
+						printf("print\n");
 					}
 					else {
 						/* other function calls - for HW3 */
