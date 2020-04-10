@@ -258,9 +258,13 @@ int  code_recur(treenode *root)
 				/* e.g. for(i=0;i<5;i++) { ... } */
 				/* Look at the output AST structure! */
 				code_recur(forn->init);
+				printf("label%d:\n",label_counter);
 				code_recur(forn->test);
+				printf("fjp label%d\n",label_counter+1);
 				code_recur(forn->stemnt);
 				code_recur(forn->incr);
+				printf("ujp label%d\n",label_counter);
+				printf("label%d:\n",label_counter+1);
 				break;
 
 			default:
