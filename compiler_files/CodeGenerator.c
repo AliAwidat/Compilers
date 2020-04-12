@@ -40,7 +40,7 @@ Variable* findVarByAdress(Variable *head,char *var_adress){
 		return NULL;
 	}
 	if(head->var_adress==var_adress) return head;
-	return findVarByName(head->var_next,var_adress);
+	return findVarByAdress(head->var_next,var_adress);
 }
 
 void insertVar(Variable *head,Variable *new_var){
