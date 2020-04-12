@@ -28,7 +28,7 @@ int label_counter=1;
 */
 int getAddressOfVariable(char* var_name)
 {
-    Variable* temp = head;
+    Variable* temp = table->table_content;
      while(temp)
      {
         if(strcmp(var_name , temp->var_name) == 0)
