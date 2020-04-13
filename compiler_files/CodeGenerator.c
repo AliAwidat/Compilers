@@ -40,7 +40,7 @@ Variable* findVarByAdress(Variable *head,char *var_adress){
 		return NULL;
 	}
 	if(head->var_adress==var_adress) return head;
-	return findVarByName(head->var_next,var_adress);
+	return findVarByAdress(head->var_next,var_adress);
 }
 
 void insertVar(Variable *head,Variable *new_var){
@@ -68,6 +68,7 @@ void insertVar(Variable *head,Variable *new_var){
 	if(tmp != NULL){
 		tmp->var_next=new_var;
 		new_var->var_prev=tmp;
+		table->table_size++;
 	}
 	return;
 }
@@ -112,7 +113,7 @@ int removeVar(Variable *var_to_remove){
 */
 int  code_recur(treenode *root)
 {
-	int test ;
+	Variable *test ;
 	char *tmp_name,*tmp_type;
 	if_node  *ifn;
 	for_node *forn;
@@ -136,10 +137,10 @@ int  code_recur(treenode *root)
 					*	In order to get the identifier name you have to use:
 					*	leaf->data.sval->str
 					*/
-				    test = findVarByAdress(leaf,leaf->data.sval->str);
-                                                if( test != NULL)
+				    test = findVarByName(table->table_content,leaf->data.sval->str);
+                        if( test != NULL)
 			            {
-		                     printf("ldc %d\n" ,test );
+		                     printf("ldc %d\n" ,test->var_name);
 		                     printf("ind\n");
 		        		}
 					break;
@@ -517,18 +518,18 @@ int  code_recur(treenode *root)
 						/* Regular assignment "=" */
 						/* e.g. x = 5; */
 						leaf = (leafnode*)root->lnode;
-					     test = findVarByAdress(leaf,leaf->data.sval->str);
+					     test = findVarByName(table->table_content,leaf->data.sval->str);
 					       if( test != NULL)
-                                                    printf("ldc %d\n" ,test );
+                                   printf("ldc %d\n" ,test->var_adress);
 						code_recur(root->rnode);
 					}
 					else if (root->hdr.tok == PLUS_EQ){
 						/* Plus equal assignment "+=" */
 						/* e.g. x += 5; */
 					     leaf = (leafnode*)root->lnode;
-					     test = findVarByAdress(leaf,leaf->data.sval->str);
+					     test = findVarByName(table->table_content,leaf->data.sval->str);
 					       if( test != NULL)
-					      		printf("ldc %d\n" ,test );
+					      		printf("ldc %d\n" ,test->var_adress);
 						code_recur(root->lnode);
 						code_recur(root->rnode);
 						printf("add\n");
@@ -538,9 +539,9 @@ int  code_recur(treenode *root)
 						/* Minus equal assignment "-=" */
 						/* e.g. x -= 5; */
 					leaf = (leafnode*)root->lnode;
-					test = findVarByAdress(leaf,leaf->data.sval->str);
+					test = findVarByName(table->table_content,leaf->data.sval->str);
 					 if( test != NULL)
-				             printf("ldc %d\n" ,test );
+				             printf("ldc %d\n" ,test->var_adress );
 				        code_recur(root->lnode);
 				        code_recur(root->rnode);
 				        printf("sub\n");
@@ -551,9 +552,9 @@ int  code_recur(treenode *root)
 						/* Multiply equal assignment "*=" */
 						/* e.g. x *= 5; */
 					    leaf = (leafnode*)root->lnode;
-					    test = findVarByAdress(leaf,leaf->data.sval->str);
+					    test = findVarByName(table->table_content,leaf->data.sval->str);
 					    if( test != NULL)
-					    	printf("ldc %d\n" ,test );
+					    	printf("ldc %d\n" ,test->var_adress);
 	     		                     code_recur(root->lnode);
 	     		                     code_recur(root->rnode);
 				             printf("mul\n");
@@ -563,9 +564,9 @@ int  code_recur(treenode *root)
 						/* Divide equal assignment "/=" */
 						/* e.g. x /= 5; */
 			        	leaf = (leafnode*)root->lnode;
-					test = findVarByAdress(leaf,leaf->data.sval->str);
+					test = findVarByName(table->table_content,leaf->data.sval->str);
 					 if( test != NULL)
-    			        	   printf("ldc %d\n" ,test );
+    			        	   printf("ldc %d\n" ,test->var_adress);
 				           code_recur(root->lnode);
 				           code_recur(root->rnode);
 				           printf("div\n");
@@ -585,12 +586,12 @@ int  code_recur(treenode *root)
 				           if(root->lnode)
 					   {
 			      		   leaf = (leafnode*)root->lnode;
-					   test = findVarByAdress(leaf,leaf->data.sval->str);
+					   test = findVarByName(table->table_content,leaf->data.sval->str);
 					   if( test != NULL)
 	                                   {
-					   printf("ldc %d\n" ,test );
+					   printf("ldc %d\n" ,test->var_adress);
 					   printf("ind\n");
-					   printf("ldc %d\n" ,test );
+					   printf("ldc %d\n" ,test->var_adress);
 					   printf("ldc %d\n" ,test );
 					   printf("ind\n");
 					   printf("inc\n");
@@ -599,15 +600,15 @@ int  code_recur(treenode *root)
                                           }
 					  else {
 				             leaf = (leafnode*)root->rnode;
-					test = findVarByAdress(leaf,leaf->data.sval->str);
+					test = findVarByAdress(table->table_content,leaf->data.sval->str);
 					 if( test != NULL)
 	                                     {
-	                            	         printf("ldc %d\n" ,test );
-					         printf("ldc %d\n" ,test );
+	                            	         printf("ldc %d\n" ,test->var_adress);
+					         printf("ldc %d\n" ,test->var_adress);
 					         printf("ind\n");
 			                         printf("inc\n");
 				                 printf("sto\n");
-				                 printf("ldc %d\n" ,test );
+				                 printf("ldc %d\n" ,test->var_adress);
 				                 printf("ind\n");
                                               }
 			                   }
@@ -618,13 +619,13 @@ int  code_recur(treenode *root)
 						  if(root->lnode)
 						  {
 					         leaf = (leafnode*)root->lnode;
-					test = findVarByAdress(leaf,leaf->data.sval->str);
+					test = findVarByAdress(table->table_content,leaf->data.sval->str);
 					 if( test != NULL)
 						 {
-						      printf("ldc %d\n" ,test );
+						      printf("ldc %d\n" ,test->var_adress );
 					              printf("ind\n");
-					              printf("ldc %d\n" ,test );
-					              printf("ldc %d\n" ,test );
+					              printf("ldc %d\n" ,test->var_adress);
+					              printf("ldc %d\n" ,test->var_adress);
 					              printf("ind\n");
 					              printf("dec\n");
 					              printf("sto\n");
@@ -632,14 +633,14 @@ int  code_recur(treenode *root)
                                                }
 					        else {
 						leaf = (leafnode*)root->rnode;
-						test = findVarByAdress(leaf,leaf->data.sval->str);
+						test = findVarByAdress(table->table_content,leaf->data.sval->str);
 						 if( test != NULL)
 					            {
-					            	printf("ldc %d\n" ,test );
-					                printf("ldc %d\n" ,test );
+					            	printf("ldc %d\n" ,test->var_adress);
+					                printf("ldc %d\n" ,test->var_adress);
 				                        printf("ind\n");
                                                         printf("dec\n");				                                printf("sto\n");
-					                printf("ldc %d\n" ,test );
+					                printf("ldc %d\n" ,test->var_adress);
 					                printf("ind\n");
 					             }
 			                          }
@@ -803,6 +804,7 @@ void print_symbol_table(treenode *root) {
 	printf("Showing the Symbol Table:\n");
 	printf("---------------------------------------\n");
 	Variable *tmp=table->table_content;
+	printf("%s\n",tmp->var_name);
 	while(tmp){
 		printf("name: %s| type: %s| adress: %d| size: %d|\n",tmp->var_name,tmp->var_type,tmp->var_adress,tmp->var_size);
 	}
