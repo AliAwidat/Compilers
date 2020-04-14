@@ -25,6 +25,7 @@ int table_adress_counter=5;
 *	I recommend to use linked list.
 *
 *	You also need to build some functions that add/remove/find element in the symbol table
+* this is a test comment
 */
 
 Variable* findVarByName(Variable *head,char *var_name){
