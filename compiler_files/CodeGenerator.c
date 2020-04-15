@@ -186,7 +186,7 @@ int  code_recur(treenode *root)
 					*	In order to get the real value you have to use:
 					*	leaf->data.dval
 					*/
-					printf("ldc %lf\n", leaf->data.ival);
+					printf("ldc %f\n", leaf->data.dval);
 					break;
 			}
 			break;
