@@ -18,7 +18,7 @@ typedef struct symbol_table {
 	Variable *table_content;
 } Symbol_table;
 
-Symbol_table *table;
+Symbol_table *table=NULL;
 int label_counter=1;
 int table_adress_counter=5;
 /*
@@ -75,12 +75,14 @@ void insertVar(Variable *head,Variable *new_var){
 }
 
 Variable * createVar(char *var_name,char *var_type,int var_size,Variable *var_next,Variable *var_prev){
+
 	Variable *new_var;
 	new_var=(Variable *)malloc(sizeof(Variable));
 	if(new_var == NULL){
 		printf("Couldn't allocate memory, variable was not created!");
 		return NULL;
 	}
+
 	new_var->var_name=var_name;
 	new_var->var_type=var_type;
 	new_var->var_adress=table_adress_counter++;
@@ -119,8 +121,15 @@ int  code_recur(treenode *root)
 	if_node  *ifn;
 	for_node *forn;
 	leafnode *leaf;
-	 Variable* t;
-	
+	 Variable* t,*tmp;
+
+	 if(table == NULL){
+		 table=(Symbol_table *)malloc(sizeof(Symbol_table));
+		 if(table == NULL){
+			 printf("Couldn't allocate memory!\n");
+			 exit(FAILURE);
+		 }
+	 }
     if (!root)
         return SUCCESS;
 
@@ -141,7 +150,7 @@ int  code_recur(treenode *root)
 				    test = findVarByName(table->table_content,leaf->data.sval->str);
                         if( test != NULL)
 			            {
-		                     printf("ldc %d\n" ,test->var_name);
+		                     printf("ldc %d\n" ,test->var_adress);
 		                     printf("ind\n");
 		        		}
 					break;
@@ -387,6 +396,7 @@ int  code_recur(treenode *root)
 							break;
 					}
 					Variable *new_var=createVar(tmp_name,tmp_type,1,NULL,NULL);
+					printf("name: %s| type: %s| adress: %d| size: %d|\n",new_var->var_name,new_var->var_type,new_var->var_adress,new_var->var_size);
 					insertVar(table->table_content,new_var);
 					break;
 
@@ -523,6 +533,7 @@ int  code_recur(treenode *root)
 					       if( test != NULL)
                                    printf("ldc %d\n" ,test->var_adress);
 						code_recur(root->rnode);
+						printf("sto\n");
 					}
 					else if (root->hdr.tok == PLUS_EQ){
 						/* Plus equal assignment "+=" */
@@ -755,7 +766,7 @@ int  code_recur(treenode *root)
 
 				case TN_WHILE:
 					/* While case */
-					printf("fjp lable%d\n",label_counter);
+					printf("lable%d\n",label_counter);
 					code_recur(root->lnode);
 					printf("fjp lable%d\n",label_counter+1);
 					code_recur(root->rnode);
