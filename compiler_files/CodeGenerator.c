@@ -28,6 +28,7 @@ int table_adress_counter=5;
 *	You also need to build some functions that add/remove/find element in the symbol table
 */
 
+/*A function for finding a variable by var_name field - returns Variable* */
 Variable* findVarByName(Variable *head,char *var_name){
 	if(head==NULL){
 		return NULL;
@@ -36,6 +37,7 @@ Variable* findVarByName(Variable *head,char *var_name){
 	return findVarByName(head->var_next,var_name);
 }
 
+/*get a variable by var_adress field - returns Variable* */
 Variable* findVarByAdress(Variable *head,char *var_adress){
 	if(head==NULL){
 		return NULL;
@@ -44,6 +46,8 @@ Variable* findVarByAdress(Variable *head,char *var_adress){
 	return findVarByAdress(head->var_next,var_adress);
 }
 
+
+/*A function used to inserts Variables into the symbol table*/
 void insertVar(Variable *head,Variable *new_var){
 
 	int i=0;
@@ -74,6 +78,7 @@ void insertVar(Variable *head,Variable *new_var){
 	return;
 }
 
+/*function for creating a new var and filling all its fields*/
 Variable * createVar(char *var_name,char *var_type,int var_size,Variable *var_next,Variable *var_prev){
 
 	Variable *new_var;
@@ -92,6 +97,7 @@ Variable * createVar(char *var_name,char *var_type,int var_size,Variable *var_ne
 	return new_var;
 }
 
+/*a function for removing a variable from the symbol table - returns 1/-1 to indecate success/failure*/
 int removeVar(Variable *var_to_remove){
 	if(var_to_remove == NULL)
 		return -1;
