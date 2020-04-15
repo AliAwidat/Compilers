@@ -128,7 +128,7 @@ int  code_recur(treenode *root)
 	for_node *forn;
 	leafnode *leaf;
 	 Variable* t,*tmp;
-	 int lable1,lable2;
+	 int label1,label2;
 
 	 if(table == NULL){
 		 table=(Symbol_table *)malloc(sizeof(Symbol_table));
@@ -205,23 +205,23 @@ int  code_recur(treenode *root)
 			case TN_IF:
 				if (ifn->else_n == NULL) {
 					/* if case (without else)*/
-					lable1=label_counter++;
+					label1=label_counter++;
 					code_recur(ifn->cond);
-					printf("fjp label%d\n",lable1);
+					printf("fjp label%d\n",label1);
 					code_recur(ifn->then_n);
-					printf("label%d:\n",lable1);
+					printf("label%d:\n",label1);
 				}
 				else {
 					/* if - else case*/ 
-					lable1=label_counter++;
-					lable2=label_counter++;
+					label1=label_counter++;
+					label2=label_counter++;
 					code_recur(ifn->cond);
-					printf("fjp label%d\n",lable1);
+					printf("fjp label%d\n",label1);
 					code_recur(ifn->then_n);
-					printf("ujp label%d\n",lable2);
-					printf("label%d:\n",lable1);
+					printf("ujp label%d\n",label2);
+					printf("label%d:\n",label1);
 					code_recur(ifn->else_n);
-					printf("label%d:\n",lable2);
+					printf("label%d:\n",label2);
 				}
 				break;
 				
@@ -263,14 +263,16 @@ int  code_recur(treenode *root)
 				/* For case*/
 				/* e.g. for(i=0;i<5;i++) { ... } */
 				/* Look at the output AST structure! */
+				label1=label_counter++;
+				label2=label_counter++;
 				code_recur(forn->init);
-				printf("label%d:\n",label_counter);
+				printf("label%d:\n",label1);
 				code_recur(forn->test);
-				printf("fjp label%d\n",label_counter+1);
+				printf("fjp label%d\n",label2);
 				code_recur(forn->stemnt);
 				code_recur(forn->incr);
-				printf("ujp label%d\n",label_counter);
-				printf("label%d:\n",label_counter+1);
+				printf("ujp label%d\n",label1);
+				printf("label%d:\n",label2);
 				break;
 
 			default:
@@ -603,35 +605,34 @@ int  code_recur(treenode *root)
 						  break;
 
 					  case INCR:
-				           if(root->lnode)
+				       if(root->lnode)
 					   {
 			      		   leaf = (leafnode*)root->lnode;
-					   test = findVarByName(table->table_content,leaf->data.sval->str);
-					   if( test != NULL)
-	                                   {
-					   printf("ldc %d\n" ,test->var_adress);
-					   printf("ind\n");
-					   printf("ldc %d\n" ,test->var_adress);
-					   printf("ldc %d\n" ,test );
-					   printf("ind\n");
-					   printf("inc\n");
-					   printf("sto\n");
-                                           }
-                                          }
-					  else {
+						   test = findVarByName(table->table_content,leaf->data.sval->str);
+						   if( test != NULL)
+						   {
+						   printf("ldc %d\n" ,test->var_adress);
+						   printf("ind\n");
+						   printf("ldc %d\n" ,test->var_adress);
+						   printf("ldc %d\n" ,test->var_adress);
+						   printf("ind\n");
+						   printf("inc\n");
+						   printf("sto\n");
+						   }
+                        }else{
 				             leaf = (leafnode*)root->rnode;
-					test = findVarByAdress(table->table_content,leaf->data.sval->str);
-					 if( test != NULL)
-	                                     {
-	                            	         printf("ldc %d\n" ,test->var_adress);
-					         printf("ldc %d\n" ,test->var_adress);
-					         printf("ind\n");
-			                         printf("inc\n");
-				                 printf("sto\n");
-				                 printf("ldc %d\n" ,test->var_adress);
-				                 printf("ind\n");
-                                              }
-			                   }
+				             test = findVarByAdress(table->table_content,leaf->data.sval->str);
+				             if( test != NULL)
+	                         {
+	                          printf("ldc %d\n" ,test->var_adress);
+					          printf("ldc %d\n" ,test->var_adress);
+					          printf("ind\n");
+							  printf("inc\n");
+							  printf("sto\n");
+							  printf("ldc %d\n" ,test->var_adress);
+							  printf("ind\n");
+                             }
+			              }
 						  break;
 
 					  case DECR:
@@ -774,26 +775,26 @@ int  code_recur(treenode *root)
 
 				case TN_WHILE:
 					/* While case */
-					lable1=label_counter++;
-					lable2=label_counter++;
-					printf("lable%d:\n",lable1);
+					label1=label_counter++;
+					label2=label_counter++;
+					printf("label%d:\n",label1);
 					code_recur(root->lnode);
-					printf("fjp lable%d\n",lable2);
+					printf("fjp label%d\n",label2);
 					code_recur(root->rnode);
-					printf("ujp lable%d\n",lable1);
-					printf("lable%d:\n",lable2);
+					printf("ujp label%d\n",label1);
+					printf("label%d:\n",label2);
 					break;
 
 				case TN_DOWHILE:
 					/* Do-While case */
-					lable1=label_counter++;
-					lable2=label_counter++;
-					printf("lable%d:\n",lable1);
+					label1=label_counter++;
+					label2=label_counter++;
+					printf("label%d:\n",label1);
 					code_recur(root->rnode);
 					code_recur(root->lnode);
-					printf("fjp lable%d\n",lable2);
-					printf("ujp lable%d\n",lable1);
-					printf("lable%d:\n",lable2);
+					printf("fjp label%d\n",label2);
+					printf("ujp label%d\n",label1);
+					printf("label%d:\n",label2);
 					break;
 
 				case TN_LABEL:
