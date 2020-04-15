@@ -122,6 +122,7 @@ int  code_recur(treenode *root)
 	for_node *forn;
 	leafnode *leaf;
 	 Variable* t,*tmp;
+	 int lable1,lable2;
 
 	 if(table == NULL){
 		 table=(Symbol_table *)malloc(sizeof(Symbol_table));
@@ -198,22 +199,23 @@ int  code_recur(treenode *root)
 			case TN_IF:
 				if (ifn->else_n == NULL) {
 					/* if case (without else)*/
+					lable1=label_counter++;
 					code_recur(ifn->cond);
-					printf("fjp label%d\n",label_counter);
+					printf("fjp label%d\n",lable1);
 					code_recur(ifn->then_n);
-					printf("label%d:\n",label_counter);
-					label_counter++;
+					printf("label%d:\n",lable1);
 				}
 				else {
 					/* if - else case*/ 
+					lable1=label_counter++;
+					lable2=label_counter++;
 					code_recur(ifn->cond);
-					printf("fjp label%d\n",label_counter);
+					printf("fjp label%d\n",lable1);
 					code_recur(ifn->then_n);
-					printf("ujp label%d\n",label_counter+1);
-					printf("label%d:\n",label_counter);
+					printf("ujp label%d\n",lable2);
+					printf("label%d:\n",lable1);
 					code_recur(ifn->else_n);
-					label_counter++;
-					printf("label%d:\n",label_counter);
+					printf("label%d:\n",lable2);
 				}
 				break;
 				
@@ -766,24 +768,26 @@ int  code_recur(treenode *root)
 
 				case TN_WHILE:
 					/* While case */
-					printf("lable%d\n",label_counter);
+					lable1=label_counter++;
+					lable2=label_counter++;
+					printf("lable%d:\n",lable1);
 					code_recur(root->lnode);
-					printf("fjp lable%d\n",label_counter+1);
+					printf("fjp lable%d\n",lable2);
 					code_recur(root->rnode);
-					printf("ujp lable%d\n",label_counter);
-					label_counter++;
-					printf("lable%d\n",label_counter);
+					printf("ujp lable%d\n",lable1);
+					printf("lable%d:\n",lable2);
 					break;
 
 				case TN_DOWHILE:
 					/* Do-While case */
-					printf("lable%d\n",label_counter);
+					lable1=label_counter++;
+					lable2=label_counter++;
+					printf("lable%d:\n",lable1);
 					code_recur(root->rnode);
 					code_recur(root->lnode);
-					printf("fjp lable%d\n",label_counter+1);
-					printf("ujp lable%d\n",label_counter);
-					label_counter++;
-					printf("lable%d\n",label_counter);
+					printf("fjp lable%d\n",lable2);
+					printf("ujp lable%d\n",lable1);
+					printf("lable%d:\n",lable2);
 					break;
 
 				case TN_LABEL:
