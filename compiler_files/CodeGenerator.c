@@ -616,22 +616,22 @@ int  code_recur(treenode *root)
 						   printf("ldc %d\n" ,test->var_adress);
 						   printf("ldc %d\n" ,test->var_adress);
 						   printf("ind\n");
-						   printf("inc\n");
+						   printf("inc 1\n");
 						   printf("sto\n");
 						   }
                         }else{
 				             leaf = (leafnode*)root->rnode;
-				             test = findVarByAdress(table->table_content,leaf->data.sval->str);
+				             test = findVarByName(table->table_content,leaf->data.sval->str);
 				             if( test != NULL)
 	                         {
 	                          printf("ldc %d\n" ,test->var_adress);
 					          printf("ldc %d\n" ,test->var_adress);
 					          printf("ind\n");
-							  printf("inc\n");
-							  printf("sto\n");
-							  printf("ldc %d\n" ,test->var_adress);
-							  printf("ind\n");
-                             }
+						  printf("inc 1\n");
+						  printf("sto\n");
+						  printf("ldc %d\n" ,test->var_adress);
+				                  printf("ind\n");
+                                }
 			              }
 						  break;
 
@@ -640,7 +640,7 @@ int  code_recur(treenode *root)
 						  if(root->lnode)
 						  {
 					         leaf = (leafnode*)root->lnode;
-					test = findVarByAdress(table->table_content,leaf->data.sval->str);
+					test = findVarByName(table->table_content,leaf->data.sval->str);
 					 if( test != NULL)
 						 {
 						      printf("ldc %d\n" ,test->var_adress );
@@ -648,19 +648,20 @@ int  code_recur(treenode *root)
 					              printf("ldc %d\n" ,test->var_adress);
 					              printf("ldc %d\n" ,test->var_adress);
 					              printf("ind\n");
-					              printf("dec\n");
+					              printf("dec 1\n");
 					              printf("sto\n");
 						  }
                                                }
 					        else {
 						leaf = (leafnode*)root->rnode;
-						test = findVarByAdress(table->table_content,leaf->data.sval->str);
+						test = findVarByName(table->table_content,leaf->data.sval->str);
 						 if( test != NULL)
 					            {
 					            	printf("ldc %d\n" ,test->var_adress);
 					                printf("ldc %d\n" ,test->var_adress);
 				                        printf("ind\n");
-                                                        printf("dec\n");				                                printf("sto\n");
+                                                        printf("dec 1\n");				                                
+							printf("sto\n");
 					                printf("ldc %d\n" ,test->var_adress);
 					                printf("ind\n");
 					             }
