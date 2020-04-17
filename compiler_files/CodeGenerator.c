@@ -408,7 +408,6 @@ int  code_recur(treenode *root)
 							break;
 					}
 					Variable *new_var=createVar(tmp_name,tmp_type,1,NULL,NULL);
-					printf("name: %s| type: %s| adress: %d| size: %d|\n",new_var->var_name,new_var->var_type,new_var->var_adress,new_var->var_size);
 					insertVar(table->table_content,new_var);
 					break;
 
