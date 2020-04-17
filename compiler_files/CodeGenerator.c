@@ -11,7 +11,6 @@ typedef struct variable {
 typedef struct symbol_table {
 
 	/* Think! what does a symbol_table contain?
-	 * test case
 	 * table_adress_counter is for tracking last variable adress, we start with adress 5
 	 * table_content is a pointer pointing to the head of the variables linked list */
 	int table_size;
@@ -19,7 +18,12 @@ typedef struct symbol_table {
 } Symbol_table;
 
 Symbol_table *table=NULL;
-int label_counter=1;
+int label_counter=0;	
+int if_label_counter=0;	
+int if_else_label_counter=0;	
+int while_loop_counter=0;	
+int do_while_loop_counter=0;	
+int for_loop_counter=0;
 int table_adress_counter=5;
 /*
 *	You need to build a data structure for the symbol table
@@ -205,36 +209,35 @@ int  code_recur(treenode *root)
 			case TN_IF:
 				if (ifn->else_n == NULL) {
 					/* if case (without else)*/
-					label1=label_counter++;
+					label1=if_label_counter++;
 					code_recur(ifn->cond);
-					printf("fjp label%d\n",label1);
+					printf("fjp if_label%d\n",label1);
 					code_recur(ifn->then_n);
-					printf("label%d:\n",label1);
+					printf("if_label%d:\n",label1);
 				}
 				else {
 					/* if - else case*/ 
-					label1=label_counter++;
-					label2=label_counter++;
+					label1=if_else_label_counter++;	
 					code_recur(ifn->cond);
-					printf("fjp label%d\n",label1);
+					printf("fjp if_else_label%d\n",label1);
 					code_recur(ifn->then_n);
-					printf("ujp label%d\n",label2);
-					printf("label%d:\n",label1);
+					printf("ujp if_else_end%d\n",label1);	
+					printf("if_else_label%d:\n",label1);
 					code_recur(ifn->else_n);
-					printf("label%d:\n",label2);
+					printf("if_else_end%d:\n",label1);
 				}
 				break;
 				
 			case TN_COND_EXPR:
 				/* (cond)?(exp):(exp); */
 				code_recur(ifn->cond);
-				printf("fjp label%d\n",label_counter);
+				printf("fjp cond_else%d\n",label_counter);
 				code_recur(ifn->then_n);
-				printf("ujp label%d\n",label_counter+1);
-				printf("label%d:\n",label_counter);
+				printf("ujp condLabel_end%d\n",label_counter);	
+				printf("cond_else%d:\n",label_counter);
 				code_recur(ifn->else_n);
+				printf("condLabel_end%d:\n",label_counter);
 				label_counter++;
-				printf("label%d:\n",label_counter);
 				break;
 
 			default:
@@ -263,16 +266,15 @@ int  code_recur(treenode *root)
 				/* For case*/
 				/* e.g. for(i=0;i<5;i++) { ... } */
 				/* Look at the output AST structure! */
-				label1=label_counter++;
-				label2=label_counter++;
+				label1=for_loop_counter++;
 				code_recur(forn->init);
-				printf("label%d:\n",label1);
+				printf("for_loop%d:\n",label1);
 				code_recur(forn->test);
-				printf("fjp label%d\n",label2);
+				printf("fjp for_end%d\n",label1);
 				code_recur(forn->stemnt);
 				code_recur(forn->incr);
-				printf("ujp label%d\n",label1);
-				printf("label%d:\n",label2);
+				printf("ujp for_loop%d\n",label1);	
+				printf("for_end%d:\n",label1);
 				break;
 
 			default:
@@ -776,26 +778,24 @@ int  code_recur(treenode *root)
 
 				case TN_WHILE:
 					/* While case */
-					label1=label_counter++;
-					label2=label_counter++;
-					printf("label%d:\n",label1);
+					label1=while_loop_counter++;	
+					printf("while_loop%d:\n",label1);
 					code_recur(root->lnode);
-					printf("fjp label%d\n",label2);
+					printf("fjp while_end%d\n",label1);
 					code_recur(root->rnode);
-					printf("ujp label%d\n",label1);
-					printf("label%d:\n",label2);
+					printf("ujp while_loop%d\n",label1);	
+					printf("while_end%d:\n",label1);
 					break;
 
 				case TN_DOWHILE:
 					/* Do-While case */
-					label1=label_counter++;
-					label2=label_counter++;
-					printf("label%d:\n",label1);
+					label1=do_while_loop_counter++;	
+					printf("do_while_loop%d:\n",label1);
 					code_recur(root->rnode);
 					code_recur(root->lnode);
-					printf("fjp label%d\n",label2);
-					printf("ujp label%d\n",label1);
-					printf("label%d:\n",label2);
+					printf("fjp do_while_end%d\n",label1);
+					printf("ujp do_while_loop%d\n",label1);
+					printf("do_while_end%d:\n",label1);
 					break;
 
 				case TN_LABEL:
