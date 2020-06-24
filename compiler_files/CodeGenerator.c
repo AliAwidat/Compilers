@@ -24,6 +24,8 @@ int if_else_label_counter=0;
 int while_loop_counter=0;	
 int do_while_loop_counter=0;	
 int for_loop_counter=0;
+int switch_loop_counter=0;
+int case_counter=0;
 int table_adress_counter=5;
 /*
 *	You need to build a data structure for the symbol table
@@ -444,6 +446,8 @@ int  code_recur(treenode *root)
 				case TN_PNTR:
 					/* pointer - for HW2! */
 					code_recur(root->lnode);
+					printf("ldc %d\n" ,test->var_adress);
+					printf("ind\n");
 					code_recur(root->rnode);
 					break;
 
@@ -491,8 +495,12 @@ int  code_recur(treenode *root)
 					}
 					else if (root->hdr.tok == BREAK) {
 						/* break jump - for HW2! */
-						code_recur(root->lnode);
+						label1=switch_loop_counter;
+						label2=case_counter-1;
+						code_recur(root->lnode);				
 						code_recur(root->rnode);
+						printf("ujp switch_end%d\n",--label1);
+						printf("switch%d_case%d:\n",label1,label2);
 					}
 					else if (root->hdr.tok == GOTO) {
 						/* GOTO jump - for HW2! */
@@ -503,8 +511,12 @@ int  code_recur(treenode *root)
 
 				case TN_SWITCH:
 					/* Switch case - for HW2! */
+					label1=switch_loop_counter++;
+					case_counter=0;
 					code_recur(root->lnode);
+					printf("switch%d_case%d:\n",label1,case_counter++);/*JK: in place*/
 					code_recur(root->rnode);
+					printf("switch_end%d:\n",label1);
 					break;
 
 				case TN_INDEX: 
@@ -601,8 +613,13 @@ int  code_recur(treenode *root)
 					switch (root->hdr.tok) {
 					  case CASE:
 					      /* you should not get here */
+						  label1=switch_loop_counter;
+						  label2=case_counter++;
+						  printf("dpl\n");
 						  code_recur(root->lnode);
 						  code_recur(root->rnode);
+						  printf("equ\n");
+						  printf("fjp switch%d_case%d\n",--label1,label2);
 						  break;
 
 					  case INCR:
