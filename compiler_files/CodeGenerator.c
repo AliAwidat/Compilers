@@ -18,6 +18,7 @@ typedef struct symbol_table {
 } Symbol_table;
 
 Symbol_table *table=NULL;
+int global=0;
 int label_counter=0;	
 int if_label_counter=0;	
 int if_else_label_counter=0;	
@@ -132,52 +133,55 @@ int is_const(treenode *root){
 		switch (root->hdr.tok) {
 					  case PLUS:
 						  /* Plus token "+" */
-						  	  right_result= is_const(root->lnode);
-						  	  left_result = is_const(root->rnode);
+						  left_result= is_const(root->lnode);
+						  	 right_result = is_const(root->rnode);
 						  	  if(left_result == -1 || right_result == -1)
 						  		  return -1;
 						  	  else
-						  		  return is_const(root->lnode)+is_const(root->rnode);
+						  		  return right_result+left_result;
 
 					  case MINUS:
 						  /* Minus token "-" */
-						  right_result= is_const(root->lnode);
-						  left_result = is_const(root->rnode);
+						  left_result= is_const(root->lnode);
+						  right_result = is_const(root->rnode);
+						  if(right_result == left_result){
+							  return 0;
+						  }
 						  if(left_result == -1 || right_result == -1)
 							  return -1;
 						  else
-							  return is_const(root->lnode)-is_const(root->rnode);
+							  return left_result-right_result;
 
 					  case DIV:
 						  /* Divide token "/" */
-						  right_result= is_const(root->lnode);
-						  left_result = is_const(root->rnode);
+						  left_result = is_const(root->lnode);
+						  right_result= is_const(root->rnode);
 						  if(left_result == 0)
 							  return 0;
 						  else if(left_result == -1 || right_result == -1)
 							  return -1;
 						  else
-							  return is_const(root->lnode)/is_const(root->rnode);
+							  return left_result/right_result;
 
 					  case STAR:
 						  /* multiply token "*" */
-						  right_result= is_const(root->lnode);
-						  left_result = is_const(root->rnode);
+						  left_result = is_const(root->lnode);
+						  right_result= is_const(root->rnode);
 						  if(right_result == 0 || left_result == 0){
 							  return 0;
 						  }else if(left_result == -1 || right_result == -1)
 							  return -1;
 						  else
-							  return is_const(root->lnode)*is_const(root->rnode);
+							  return left_result*right_result;
 					  case AND:
-						  right_result= is_const(root->lnode);
-						  left_result = is_const(root->rnode);
+						  left_result= is_const(root->lnode);
+						  right_result= is_const(root->rnode);
 						  if(right_result == 0 || left_result ==0)
 							  return 0;
 						  else if(left_result == -1 || right_result == -1)
 							  return -1;
 						  else
-							  return is_const(root->lnode)+is_const(root->rnode);
+							  return is_const(root->lnode)&&is_const(root->rnode);
 
 					  case OR:
 						  /* Or token "||" */
@@ -207,7 +211,7 @@ int is_const(treenode *root){
 						  if(right_result == -1 || left_result == -1)
 							  return -1;
 						  else
-							  return leaf1->data.ival+leaf2->data.ival;
+							  return leaf1->data.ival==leaf2->data.ival;
 					  case NOT_EQ:
 						  /* Not equal token "!=" */
 						  if(right_result == -1 || left_result == -1)
@@ -331,14 +335,12 @@ int  code_recur(treenode *root)
 				if (ifn->else_n == NULL) {
 					/* if case (without else)*/
 					if(is_const(ifn->cond) != 0){
-						printf("printing if %d\n",is_const(ifn->cond));
 						label1=if_label_counter++;
 						code_recur(ifn->cond);
 						printf("fjp if_label%d\n",label1);
 						code_recur(ifn->then_n);
 						printf("if_label%d:\n",label1);
 					}else{
-						printf("not printing %d\n",is_const(ifn->cond));
 						break;
 					}
 				}else {
@@ -346,21 +348,21 @@ int  code_recur(treenode *root)
 					if(is_const(ifn->cond) == 1){
 						code_recur(ifn->then_n);
 						break;
-					}
-					if(is_const(ifn->cond) == 0){
+					}else if(is_const(ifn->cond) == 0){
 						if(is_const(ifn->then_n) != 0)
 							code_recur(ifn->then_n);
 						break;
+					}else{
+						label1=if_else_label_counter++;
+						code_recur(ifn->cond);
+						printf("fjp if_else_label%d\n",label1);
+						code_recur(ifn->then_n);
+						printf("ujp if_else_end%d\n",label1);
+						printf("if_else_label%d:\n",label1);
+						code_recur(ifn->else_n);
+						printf("if_else_end%d:\n",label1);
+						break;
 					}
-					label1=if_else_label_counter++;	
-					code_recur(ifn->cond);
-					printf("fjp if_else_label%d\n",label1);
-					code_recur(ifn->then_n);
-					printf("ujp if_else_end%d\n",label1);	
-					printf("if_else_label%d:\n",label1);
-					code_recur(ifn->else_n);
-					printf("if_else_end%d:\n",label1);
-					break;
 				}
 				
 
