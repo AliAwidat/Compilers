@@ -18,15 +18,19 @@ typedef struct symbol_table {
 } Symbol_table;
 
 Symbol_table *table=NULL;
-int label_counter=0;	
-int if_label_counter=0;	
-int if_else_label_counter=0;	
-int while_loop_counter=0;	
-int do_while_loop_counter=0;	
+int label_counter=0;
+int if_label_counter=0;
+int if_else_label_counter=0;
+int while_loop_counter=0;
+int do_while_loop_counter=0;
 int for_loop_counter=0;
 int switch_loop_counter=0;
 int case_counter=0;
 int table_adress_counter=5;
+int Declaration_Flag=0;
+int Dereference_Flag=0;
+int EQ_Left_Flag=0;
+int Array_D_Flag=0;
 /*
 *	You need to build a data structure for the symbol table
 *	I recommend to use linked list.
@@ -44,13 +48,13 @@ Variable* findVarByName(Variable *head,char *var_name){
 }
 
 /*get a variable by var_adress field - returns Variable* */
-Variable* findVarByAdress(Variable *head,char *var_adress){
+/*Variable* findVarByAdress(Variable *head,char *var_adress){
 	if(head==NULL){
 		return NULL;
 	}
 	if(head->var_adress==var_adress) return head;
 	return findVarByAdress(head->var_next,var_adress);
-}
+}*/
 
 
 /*A function used to inserts Variables into the symbol table*/
@@ -145,13 +149,15 @@ int  code_recur(treenode *root)
 	 }
     if (!root)
         return SUCCESS;
-
+//////////////////////////////////////////WITCH NODE??///////////////////////
     switch (root->hdr.which){
 		case LEAF_T:
 			leaf = (leafnode *) root;
+			//////////////////////////LEAF CASES////////////////
 			switch (leaf->hdr.type) {
 				case TN_LABEL:
 					/* Maybe you will use it later */
+					//printf("I'm at label <TN_LABEL> (L) line 158!\n");
 					break;
 
 				case TN_IDENT:
@@ -160,12 +166,44 @@ int  code_recur(treenode *root)
 					*	In order to get the identifier name you have to use:
 					*	leaf->data.sval->str
 					*/
+					//printf("I'm at Identifier (L)!! \n");
+					tmp_name=leaf->data.sval->str;
+					printf("%s\n",tmp_name);
+					////////////////////////Declaration Flag////////////////
+					if (Declaration_Flag){
+						//printf("TN_IDEN >>>Dec Flag is on<<<\n");
+					Variable *new_var=createVar(tmp_name,tmp_type,1,NULL,NULL);
+					insertVar(table->table_content,new_var);
+					Declaration_Flag=0;
+					//printf("TN_IDEN >>>Dec Flag is off<<<\n");
+					}
+					///////////////////////Dereferance Flag//////////////////
+					else if (Dereference_Flag){
+
 				    test = findVarByName(table->table_content,leaf->data.sval->str);
                         if( test != NULL)
-			            {
+			            	{
+                        	//printf("TN_IDEN >>>Deref Flag is on<<<\n");
 		                     printf("ldc %d\n" ,test->var_adress);
 		                     printf("ind\n");
-		        		}
+			            	}
+                        Dereference_Flag=0;
+                        //printf("TN_IDEN >>>Deref Flag is off<<<\n");
+					}
+					///////////////////////////Else Cases/////////////////////////
+					else{
+				    test = findVarByName(table->table_content,leaf->data.sval->str);
+                        if( test != NULL)
+			            	{
+                        	//printf("TN_IDEN >>>else<<<\n");
+		                     printf("ldc %d\n" ,test->var_adress);
+		                     //////EQ is on//////
+		                     if(!EQ_Left_Flag)
+		                     {
+		                     printf("ind\n");
+		                     }
+			            	}
+						}
 					break;
 
 				case TN_COMMENT:
@@ -181,6 +219,7 @@ int  code_recur(treenode *root)
 					break;
 
 				case TN_TYPE:
+					//printf("I'm at Type (L) line 184!\n");
 					/* Maybe you will use it later */
 					break;
 
@@ -190,7 +229,15 @@ int  code_recur(treenode *root)
 					*	In order to get the int value you have to use: 
 					*	leaf->data.ival 
 					*/
+					//printf("constant case INT (L)\n");
 					printf("ldc %d\n", leaf->data.ival);
+					if(Array_D_Flag){
+						printf("ixa ? \n");
+						if (Array_D_Flag==1)
+							printf("dec 0\n");
+						if (!EQ_Left_Flag)
+							printf("ind\n");
+					}
 					break;
 
 				case TN_REAL:
@@ -199,6 +246,7 @@ int  code_recur(treenode *root)
 					*	In order to get the real value you have to use:
 					*	leaf->data.dval
 					*/
+					//printf("constant case REAL (L)\n");
 					printf("ldc %f\n", leaf->data.dval);
 					break;
 			}
@@ -219,11 +267,11 @@ int  code_recur(treenode *root)
 				}
 				else {
 					/* if - else case*/ 
-					label1=if_else_label_counter++;	
+					label1=if_else_label_counter++;
 					code_recur(ifn->cond);
 					printf("fjp if_else_label%d\n",label1);
 					code_recur(ifn->then_n);
-					printf("ujp if_else_end%d\n",label1);	
+					printf("ujp if_else_end%d\n",label1);
 					printf("if_else_label%d:\n",label1);
 					code_recur(ifn->else_n);
 					printf("if_else_end%d:\n",label1);
@@ -235,7 +283,7 @@ int  code_recur(treenode *root)
 				code_recur(ifn->cond);
 				printf("fjp cond_else%d\n",label_counter);
 				code_recur(ifn->then_n);
-				printf("ujp condLabel_end%d\n",label_counter);	
+				printf("ujp condLabel_end%d\n",label_counter);
 				printf("cond_else%d:\n",label_counter);
 				code_recur(ifn->else_n);
 				printf("condLabel_end%d:\n",label_counter);
@@ -275,7 +323,7 @@ int  code_recur(treenode *root)
 				printf("fjp for_end%d\n",label1);
 				code_recur(forn->stemnt);
 				code_recur(forn->incr);
-				printf("ujp for_loop%d\n",label1);	
+				printf("ujp for_loop%d\n",label1);
 				printf("for_end%d:\n",label1);
 				break;
 
@@ -316,6 +364,7 @@ int  code_recur(treenode *root)
 
 				case TN_FUNC_CALL:
 					/* Function call */
+					//printf("I'm at Function Call line 320!\n");
 					if (strcmp(((leafnode*)root->lnode)->data.sval->str, "printf") == 0) {
 						/* printf case */
 						/* The expression that you need to print is located in */
@@ -332,6 +381,7 @@ int  code_recur(treenode *root)
 					break;
 
 				case TN_BLOCK:
+					//printf("I'm here at Block line 337!\n");
 					/* Maybe you will use it later */
 					code_recur(root->lnode);
 					code_recur(root->rnode);
@@ -339,11 +389,13 @@ int  code_recur(treenode *root)
 
 				case TN_ARRAY_DECL:
 					/* array declaration - for HW2 */
+     					//printf("I'm at Array Declaration <TN_ARRAY_DECL> \n");
 					code_recur(root->lnode);
 					code_recur(root->rnode);
 					break;
 
 				case TN_EXPR_LIST:
+					//printf("I'm here at Expr lis line 363!\n");
 					/* Maybe you will use it later */
 					code_recur(root->lnode);
 					code_recur(root->rnode);
@@ -381,57 +433,68 @@ int  code_recur(treenode *root)
 
 				case TN_TYPE_LIST:
 					/* Maybe you will use it later */
+					//printf("I'm at Type list line 398!\n");
+					leaf = (leafnode*)root->lnode;
+					switch(leaf->hdr.tok){
+									case INT:
+										tmp_type="int";
+										//printf("int is good!\n");
+										break;
+									case FLOAT:
+										tmp_type="float";
+										//printf("float is good!\n");
+										break;
+									case DOUBLE:
+										tmp_type="double";
+										//printf("double is good!\n");
+										break;
+									default:
+										tmp_type=NULL;
+										//printf("NULL is good!\n");
+										break;
+												}
 					code_recur(root->lnode);
 					code_recur(root->rnode);
 					break;
 
 				case TN_COMP_DECL:
 					/* struct component declaration - for HW2 */
+					//printf("I'm at SC Declaration <TN_COMP_DECL> line 458!\n");
 					code_recur(root->lnode);
 					code_recur(root->rnode);
 					break;
 					
 				case TN_DECL:
-					leaf = (leafnode*)root->rnode;
-					tmp_name=leaf->data.sval->str;
-					leaf = (leafnode*)root->lnode->lnode;
-					switch(leaf->hdr.tok){
-						case INT:
-							tmp_type="int";
-							break;
-						case FLOAT:
-							tmp_type="float";
-							break;
-						case DOUBLE:
-							tmp_type="double";
-							break;
-						default:
-							tmp_type=NULL;
-							break;
-					}
-					Variable *new_var=createVar(tmp_name,tmp_type,1,NULL,NULL);
-					insertVar(table->table_content,new_var);
+					Declaration_Flag=1;
+					//printf("I'm at Declaration <TN_DEC> line 409!\n");
+					code_recur(root->lnode);
+					code_recur(root->rnode);
+					
 					break;
 
 				case TN_DECL_LIST:
 					/* Maybe you will use it later */
+					//printf("I'm at TN_DECL_LIST line 434!\n");
 					code_recur(root->lnode);
 					code_recur(root->rnode);
 					break;
 
 				case TN_DECLS:
-					/* Maybe you will use it later */
+					/* Declaration - Maybe you will use it later */
+					//printf("I'm at TN_DECLS line 510!\n");
 					code_recur(root->lnode);
 					code_recur(root->rnode);
 					break;
 
 				case TN_STEMNT_LIST:
 					/* Maybe you will use it later */
+					//printf("I'm at Statement List line 449!\n");
 					code_recur(root->lnode);
 					code_recur(root->rnode);
 					break;
 
 				case TN_STEMNT:
+					//printf("I'm at Statement line 455!\n");
 					/* Maybe you will use it later */
 					code_recur(root->lnode);
 					code_recur(root->rnode);
@@ -445,9 +508,10 @@ int  code_recur(treenode *root)
 
 				case TN_PNTR:
 					/* pointer - for HW2! */
+					//printf("I'm at Pointer line 467!\n");
 					code_recur(root->lnode);
-					printf("ldc %d\n" ,test->var_adress);
-					printf("ind\n");
+					//printf("ldc %d\n" ,test->var_adress);
+					//printf("ind\n");
 					code_recur(root->rnode);
 					break;
 
@@ -490,20 +554,23 @@ int  code_recur(treenode *root)
 				case TN_JUMP:
 					if (root->hdr.tok == RETURN) {
 						/* return jump - for HW2! */
+						//printf("I'm at RETURN \n");
 						code_recur(root->lnode);
 						code_recur(root->rnode);
 					}
 					else if (root->hdr.tok == BREAK) {
 						/* break jump - for HW2! */
+						//printf("I'm at BREAK \n");
 						label1=switch_loop_counter;
 						label2=case_counter-1;
-						code_recur(root->lnode);				
+						code_recur(root->lnode);
 						code_recur(root->rnode);
 						printf("ujp switch_end%d\n",--label1);
 						printf("switch%d_case%d:\n",label1,label2);
 					}
 					else if (root->hdr.tok == GOTO) {
 						/* GOTO jump - for HW2! */
+						//printf("I'm at GoTO \n");
 						code_recur(root->lnode);
 						code_recur(root->rnode);
 					}
@@ -521,12 +588,22 @@ int  code_recur(treenode *root)
 
 				case TN_INDEX: 
 					/* call for array - for HW2! */
+					//printf("I'm at Call for Array <TN_INDEX> \n");
+					Array_D_Flag++;
+					printf("Array Count: %d \n",Array_D_Flag);
 					code_recur(root->lnode);
+					printf("Array Count: %d \n",Array_D_Flag);
 					code_recur(root->rnode);
+					Array_D_Flag--;
+					//printf("ixa XX\n");
+
+
 					break;
 
 				case TN_DEREF:
 					/* pointer derefrence - for HW2! */
+					Dereference_Flag=1;
+					//printf("I'm at Dereference_Flag <TN_DEREF> line 600!\n");
 					code_recur(root->lnode);
 					code_recur(root->rnode);
 					break;
@@ -548,19 +625,24 @@ int  code_recur(treenode *root)
 					break;
 
 				case TN_ASSIGN:
+					printf("(=)\n");
 					if(root->hdr.tok == EQ){
 						/* Regular assignment "=" */
 						/* e.g. x = 5; */
-						leaf = (leafnode*)root->lnode;
-					     test = findVarByName(table->table_content,leaf->data.sval->str);
-					       if( test != NULL)
-                                   printf("ldc %d\n" ,test->var_adress);
+						//printf("EQ going left [<<<<<<] \n");
+						//printf(">>>>>>> EQ_Left_Flag On <<<<<< \n");
+						EQ_Left_Flag=1;
+						code_recur(root->lnode);
+						EQ_Left_Flag=0;
+						//printf(">>>>>>> EQ_Left_Flag Off <<<<<< \n");
+						//printf("EQ going Right [>>>>>>]\n");
 						code_recur(root->rnode);
 						printf("sto\n");
 					}
 					else if (root->hdr.tok == PLUS_EQ){
 						/* Plus equal assignment "+=" */
 						/* e.g. x += 5; */
+						//printf("(+=)\n");
 					     leaf = (leafnode*)root->lnode;
 					     test = findVarByName(table->table_content,leaf->data.sval->str);
 					       if( test != NULL)
@@ -568,11 +650,12 @@ int  code_recur(treenode *root)
 						code_recur(root->lnode);
 						code_recur(root->rnode);
 						printf("add\n");
-					         printf("sto\n");
+					        printf("sto\n");
 					}
 					else if (root->hdr.tok == MINUS_EQ){
 						/* Minus equal assignment "-=" */
 						/* e.g. x -= 5; */
+						//printf("(-=)\n");
 					leaf = (leafnode*)root->lnode;
 					test = findVarByName(table->table_content,leaf->data.sval->str);
 					 if( test != NULL)
@@ -586,6 +669,7 @@ int  code_recur(treenode *root)
 					else if (root->hdr.tok == STAR_EQ){
 						/* Multiply equal assignment "*=" */
 						/* e.g. x *= 5; */
+						//printf("(*=)\n");
 					    leaf = (leafnode*)root->lnode;
 					    test = findVarByName(table->table_content,leaf->data.sval->str);
 					    if( test != NULL)
@@ -598,6 +682,7 @@ int  code_recur(treenode *root)
 					else if (root->hdr.tok == DIV_EQ){
 						/* Divide equal assignment "/=" */
 						/* e.g. x /= 5; */
+						//printf("(/=)\n");
 			        	leaf = (leafnode*)root->lnode;
 					test = findVarByName(table->table_content,leaf->data.sval->str);
 					 if( test != NULL)
@@ -648,7 +733,7 @@ int  code_recur(treenode *root)
 						  printf("inc 1\n");
 						  printf("sto\n");
 						  printf("ldc %d\n" ,test->var_adress);
-				                  printf("ind\n");
+				       		  printf("ind\n");
                                 }
 			              }
 						  break;
@@ -677,9 +762,9 @@ int  code_recur(treenode *root)
 					            {
 					            	printf("ldc %d\n" ,test->var_adress);
 					                printf("ldc %d\n" ,test->var_adress);
-				                        printf("ind\n");
-                                                        printf("dec 1\n");				                                
-							printf("sto\n");
+				                    	printf("ind\n");
+                                    			printf("dec 1\n");
+						        printf("sto\n");
 					                printf("ldc %d\n" ,test->var_adress);
 					                printf("ind\n");
 					             }
@@ -688,6 +773,7 @@ int  code_recur(treenode *root)
 
 					  case PLUS:
 					  	  /* Plus token "+" */
+
 						  code_recur(root->lnode);
 						  code_recur(root->rnode);
 						  printf("add\n");
@@ -702,8 +788,8 @@ int  code_recur(treenode *root)
 						  printf("sub\n");
 						  }
 						  else {
-							   code_recur(root->rnode);
-							    printf("neg\n");
+							code_recur(root->rnode);
+							printf("neg\n");
 						  }
 						  break;
 
@@ -794,18 +880,18 @@ int  code_recur(treenode *root)
 
 				case TN_WHILE:
 					/* While case */
-					label1=while_loop_counter++;	
+					label1=while_loop_counter++;
 					printf("while_loop%d:\n",label1);
 					code_recur(root->lnode);
 					printf("fjp while_end%d\n",label1);
 					code_recur(root->rnode);
-					printf("ujp while_loop%d\n",label1);	
+					printf("ujp while_loop%d\n",label1);
 					printf("while_end%d:\n",label1);
 					break;
 
 				case TN_DOWHILE:
 					/* Do-While case */
-					label1=do_while_loop_counter++;	
+					label1=do_while_loop_counter++;
 					printf("do_while_loop%d:\n",label1);
 					code_recur(root->rnode);
 					code_recur(root->lnode);
