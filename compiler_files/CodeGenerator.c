@@ -31,6 +31,10 @@ int Declaration_Flag=0;
 int Dereference_Flag=0;
 int EQ_Left_Flag=0;
 int Array_D_Flag=0;
+int Array_INDEX_Flag=0;	
+int Array_Decl_Flag=0;	
+int Decleration_Flag=0;	
+int ixa=1;
 /*
 *	You need to build a data structure for the symbol table
 *	I recommend to use linked list.
@@ -168,13 +172,16 @@ int  code_recur(treenode *root)
 					*/
 					//printf("I'm at Identifier (L)!! \n");
 					tmp_name=leaf->data.sval->str;
-					printf("%s\n",tmp_name);
+					//printf("%s\n",tmp_name);
 					////////////////////////Declaration Flag////////////////
-					if (Declaration_Flag){
+					if ((Declaration_Flag)&&(!Array_Decl_Flag))
+					{
 						//printf("TN_IDEN >>>Dec Flag is on<<<\n");
 					Variable *new_var=createVar(tmp_name,tmp_type,1,NULL,NULL);
 					insertVar(table->table_content,new_var);
-					Declaration_Flag=0;
+					}	
+					if (Array_Decl_Flag){	
+					tmp_name=leaf->data.sval->str;
 					//printf("TN_IDEN >>>Dec Flag is off<<<\n");
 					}
 					///////////////////////Dereferance Flag//////////////////
@@ -187,22 +194,23 @@ int  code_recur(treenode *root)
 		                     printf("ldc %d\n" ,test->var_adress);
 		                     printf("ind\n");
 			            	}
-                        Dereference_Flag=0;
-                        //printf("TN_IDEN >>>Deref Flag is off<<<\n");
 					}
 					///////////////////////////Else Cases/////////////////////////
 					else{
 				    test = findVarByName(table->table_content,leaf->data.sval->str);
                         if( test != NULL)
-			            	{
+			            {
                         	//printf("TN_IDEN >>>else<<<\n");
-		                     printf("ldc %d\n" ,test->var_adress);
-		                     //////EQ is on//////
-		                     if(!EQ_Left_Flag)
-		                     {
-		                     printf("ind\n");
-		                     }
-			            	}
+                        		if (!Declaration_Flag)	
+                        		{	
+                        			printf("ldc %d\n" ,test->var_adress);	
+                        			//////EQ is on//////	
+                        			if(!EQ_Left_Flag)	
+                        			{	
+                        				printf("ind\n");	
+                        			}	
+                        		}
+			            }
 						}
 					break;
 
@@ -230,10 +238,22 @@ int  code_recur(treenode *root)
 					*	leaf->data.ival 
 					*/
 					//printf("constant case INT (L)\n");
-					printf("ldc %d\n", leaf->data.ival);
-					if(Array_D_Flag){
+					if (!Array_Decl_Flag)	
+						printf("ldc %d\n", leaf->data.ival);	
+					else	
+					{	
+						//int tmp_size=leaf->data.ival;	
+						int tmp_size=ixa;	
+						printf("tmp_size = %d\n",tmp_size);	
+						for (int i=tmp_size;i>0;i--)	
+						{	
+						Variable *new_var=createVar(tmp_name,tmp_type,1,NULL,NULL);	
+						insertVar(table->table_content,new_var);	
+						}	
+					}	
+					if(Array_INDEX_Flag){
 						printf("ixa ? \n");
-						if (Array_D_Flag==1)
+						if (Array_INDEX_Flag==1)
 							printf("dec 0\n");
 						if (!EQ_Left_Flag)
 							printf("ind\n");
@@ -469,14 +489,16 @@ int  code_recur(treenode *root)
 					//printf("I'm at Declaration <TN_DEC> line 409!\n");
 					code_recur(root->lnode);
 					code_recur(root->rnode);
-					
+					Declaration_Flag=0;
 					break;
 
 				case TN_DECL_LIST:
 					/* Maybe you will use it later */
 					//printf("I'm at TN_DECL_LIST line 434!\n");
+					Decleration_Flag=1;
 					code_recur(root->lnode);
 					code_recur(root->rnode);
+					Decleration_Flag=0;
 					break;
 
 				case TN_DECLS:
@@ -589,12 +611,12 @@ int  code_recur(treenode *root)
 				case TN_INDEX: 
 					/* call for array - for HW2! */
 					//printf("I'm at Call for Array <TN_INDEX> \n");
-					Array_D_Flag++;
+					Array_INDEX_Flag++;
 					printf("Array Count: %d \n",Array_D_Flag);
 					code_recur(root->lnode);
 					printf("Array Count: %d \n",Array_D_Flag);
 					code_recur(root->rnode);
-					Array_D_Flag--;
+					Array_INDEX_Flag--;
 					//printf("ixa XX\n");
 
 
@@ -602,10 +624,11 @@ int  code_recur(treenode *root)
 
 				case TN_DEREF:
 					/* pointer derefrence - for HW2! */
-					Dereference_Flag=1;
+					Dereference_Flag++;
 					//printf("I'm at Dereference_Flag <TN_DEREF> line 600!\n");
 					code_recur(root->lnode);
 					code_recur(root->rnode);
+					Dereference_Flag--;
 					break;
 
 				case TN_SELECT:
@@ -625,7 +648,7 @@ int  code_recur(treenode *root)
 					break;
 
 				case TN_ASSIGN:
-					printf("(=)\n");
+					//printf("(=)\n");
 					if(root->hdr.tok == EQ){
 						/* Regular assignment "=" */
 						/* e.g. x = 5; */
