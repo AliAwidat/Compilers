@@ -51,6 +51,46 @@ Variable* findVarByName(Variable *head,char *var_name){
 	return findVarByName(head->var_next,var_name);
 }
 
+/*void print_case(treenode *root,int case_num){
+	leafnode *leaf;
+	if(root == NULL)
+		return;
+	case TN_EXPR:
+					switch (root->hdr.tok) {
+					  case CASE:
+	if(root->hdr.which == LEAF_T){
+			leaf = (leafnode *) root;
+			//////////////////////////LEAF CASES////////////////
+			if(leaf->hdr.type == TN_LABEL) {
+
+			}
+	}
+}*/
+
+char* getVarFromTree(treenode *root){
+		leafnode *leaf;
+		char *tmp1,*tmp2;
+		if(root == NULL)
+			return NULL;
+
+		if(root->hdr.which == LEAF_T){
+			leaf = (leafnode *) root;
+			//////////////////////////LEAF CASES////////////////
+			if(leaf->hdr.type == TN_IDENT)
+				return leaf->data.sval->str;
+		}
+		tmp1=getVarFromTree(root->lnode);
+		tmp2=getVarFromTree(root->rnode);
+		if((tmp1 != NULL && tmp2 != NULL) || (tmp1 == NULL && tmp2 == NULL))
+			return NULL;
+		else{
+			if(tmp1 != NULL)
+				return tmp1;
+			else
+				return tmp2;
+		}
+
+}
 /*get a variable by var_adress field - returns Variable* */
 /*Variable* findVarByAdress(Variable *head,char *var_adress){
 	if(head==NULL){
@@ -129,6 +169,154 @@ int removeVar(Variable *var_to_remove){
 	return 1;
 }
 
+int is_const(treenode *root){
+	int right_result=0,left_result=0;
+	leafnode *leaf1,*leaf2;
+	if_node  *ifn;
+	if(root == NULL)
+		return -1;
+	if(root->hdr.which == NODE_T){
+		leaf1 = (leafnode *)root->lnode;
+		leaf2 = (leafnode *)root->rnode;
+		switch (root->hdr.tok) {
+					  case PLUS:
+						  /* Plus token "+" */
+						  left_result= is_const(root->lnode);
+						  right_result = is_const(root->rnode);
+						  if(left_result == -1 || right_result == -1)
+							  return -1;
+						  else
+							  return right_result+left_result;
+
+					  case MINUS:
+						  /* Minus token "-" */
+						  left_result= is_const(root->lnode);
+						  right_result = is_const(root->rnode);
+						  if(right_result == left_result){
+							  return 0;
+						  }
+						  if(left_result == -1 || right_result == -1)
+							  return -1;
+						  else
+							  return left_result-right_result;
+
+					  case DIV:
+						  /* Divide token "/" */
+						  left_result = is_const(root->lnode);
+						  right_result= is_const(root->rnode);
+						  if(left_result == 0)
+							  return 0;
+						  else if(left_result == -1 || right_result == -1)
+							  return -1;
+						  else
+							  return left_result/right_result;
+
+					  case STAR:
+						  /* multiply token "*" */
+						  left_result = is_const(root->lnode);
+						  right_result= is_const(root->rnode);
+						  if(right_result == 0 || left_result == 0){
+							  return 0;
+						  }else if(left_result == -1 || right_result == -1)
+							  return -1;
+						  else
+							  return left_result*right_result;
+					  case AND:
+						  left_result= is_const(root->lnode);
+						  right_result= is_const(root->rnode);
+						  if(right_result == 0 || left_result ==0)
+							  return 0;
+						  else if(left_result == -1 || right_result == -1)
+							  return -1;
+						  else
+							  return is_const(root->lnode)&&is_const(root->rnode);
+
+					  case OR:
+						  /* Or token "||" */
+						  left_result= is_const(root->lnode);
+						  right_result= is_const(root->rnode);
+						  if(right_result == 1 || left_result == 1)
+							  return 1;
+						  else if(right_result == -1 || left_result == -1)
+							  return -1;
+						  else
+							  return leaf1->data.ival||leaf2->data.ival;
+
+					  case GRTR:
+						  /* Greater token ">" */
+						  left_result= is_const(root->lnode);
+						  right_result= is_const(root->rnode);
+						  if(right_result == -1 || left_result == -1)
+							  return -1;
+						  else
+							  return leaf1->data.ival>leaf2->data.ival;
+
+					  case LESS:
+						  /* Less token "<" */
+						  left_result= is_const(root->lnode);
+						  right_result= is_const(root->rnode);
+						  if(right_result == -1 || left_result == -1)
+							  return -1;
+						  else
+							  return leaf1->data.ival<leaf2->data.ival;
+
+					  case EQUAL:
+						  /* Equal token "==" */
+						  left_result= is_const(root->lnode);
+						  right_result= is_const(root->rnode);
+						  if(right_result == -1 || left_result == -1)
+							  return -1;
+						  else
+							  return leaf1->data.ival==leaf2->data.ival;
+					  case NOT_EQ:
+						  /* Not equal token "!=" */
+						  left_result= is_const(root->lnode);
+						  right_result= is_const(root->rnode);
+						  if(right_result == -1 || left_result == -1)
+							  return -1;
+						  else
+							  return leaf1->data.ival != leaf2->data.ival;
+
+					  case LESS_EQ:
+						  left_result= is_const(root->lnode);
+						  right_result= is_const(root->rnode);
+						  if(right_result == -1 || left_result == -1)
+							  return -1;
+						  else
+							  return leaf1->data.ival <= leaf2->data.ival;
+					  case GRTR_EQ:
+						  /* Greater or equal token ">=" */
+						  left_result= is_const(root->lnode);
+						  right_result= is_const(root->rnode);
+						  if(right_result == -1 || left_result == -1)
+							  return -1;
+						  else
+							  return leaf1->data.ival >= leaf2->data.ival;
+					  default:
+						  return -1;
+					}
+	}else if(root->hdr.which == LEAF_T){
+		if(root->hdr.type == TN_IDENT){
+			return -1;
+		}else {
+			leaf1 = (leafnode *)root;
+			return leaf1->data.ival;
+		}
+	}else if(root->hdr.which == IF_T){
+		ifn = (if_node *) root;
+		if(ifn->hdr.type ==TN_COND_EXPR) {
+			if(is_const(ifn->cond) == 1)
+				return 1;
+			else if(is_const(ifn->cond) == 0)
+					return 0;
+			else return -1;
+		}
+	}
+	return -1;
+
+}
+
+
 /*
 *	This recursive function is the main method for Code Generation
 *	Input: treenode (AST)
@@ -137,13 +325,13 @@ int removeVar(Variable *var_to_remove){
 int  code_recur(treenode *root)
 {
 	Variable *test ;
-	char *tmp_name,*tmp_type;
+	char *tmp_name,*tmp_type,*name;
 	if_node  *ifn;
 	for_node *forn;
 	leafnode *leaf;
 	 Variable* t,*tmp;
 	 int label1,label2;
-
+	 int left_result=0,right_result=0;
 	 if(table == NULL){
 		 table=(Symbol_table *)malloc(sizeof(Symbol_table));
 		 if(table == NULL){
@@ -239,7 +427,7 @@ int  code_recur(treenode *root)
 					*/
 					//printf("constant case INT (L)\n");
 					if (!Array_Decl_Flag)	
-						printf("ldc %d\n", leaf->data.ival);	
+						printf("ldc %d\n", leaf->data.ival);
 					else	
 					{	
 						//int tmp_size=leaf->data.ival;	
@@ -279,27 +467,51 @@ int  code_recur(treenode *root)
 			case TN_IF:
 				if (ifn->else_n == NULL) {
 					/* if case (without else)*/
-					label1=if_label_counter++;
-					code_recur(ifn->cond);
-					printf("fjp if_label%d\n",label1);
-					code_recur(ifn->then_n);
-					printf("if_label%d:\n",label1);
-				}
-				else {
+					if(is_const(ifn->cond) < 0){
+						label1=if_label_counter++;
+						code_recur(ifn->cond);
+						printf("fjp if_label%d\n",label1);
+						code_recur(ifn->then_n);
+						printf("if_label%d:\n",label1);
+						break;
+					}else if(is_const(ifn->cond) == 0){
+						break;
+					} else {
+						code_recur(ifn->then_n);
+						break;
+					}
+				}else {
 					/* if - else case*/ 
-					label1=if_else_label_counter++;
-					code_recur(ifn->cond);
-					printf("fjp if_else_label%d\n",label1);
-					code_recur(ifn->then_n);
-					printf("ujp if_else_end%d\n",label1);
-					printf("if_else_label%d:\n",label1);
-					code_recur(ifn->else_n);
-					printf("if_else_end%d:\n",label1);
+					if(is_const(ifn->cond) > 0){
+						code_recur(ifn->then_n);
+						break;
+					}else if(is_const(ifn->cond) == 0){
+						code_recur(ifn->else_n);
+						break;
+					}else{
+						label1=if_else_label_counter++;
+						code_recur(ifn->cond);
+						printf("fjp if_else_label%d\n",label1);
+						code_recur(ifn->then_n);
+						printf("ujp if_else_end%d\n",label1);
+						printf("if_else_label%d:\n",label1);
+						code_recur(ifn->else_n);
+						printf("if_else_end%d:\n",label1);
+						break;
+					}
 				}
-				break;
 				
 			case TN_COND_EXPR:
 				/* (cond)?(exp):(exp); */
+				if(is_const(ifn->cond) == 1)
+				{
+					code_recur(ifn->then_n);
+					break;
+				}
+				if(is_const(ifn->cond) == 0){
+					code_recur(ifn->else_n);
+					break;
+				}
 				code_recur(ifn->cond);
 				printf("fjp cond_else%d\n",label_counter);
 				code_recur(ifn->then_n);
@@ -600,6 +812,10 @@ int  code_recur(treenode *root)
 
 				case TN_SWITCH:
 					/* Switch case - for HW2! */
+					/*if(is_const(root->lnode) >= 0){
+						print_case(root->rnode);
+						break;
+					}*/
 					label1=switch_loop_counter++;
 					case_counter=0;
 					code_recur(root->lnode);
@@ -666,6 +882,9 @@ int  code_recur(treenode *root)
 						/* Plus equal assignment "+=" */
 						/* e.g. x += 5; */
 						//printf("(+=)\n");
+						if(is_const(root->rnode) == 0){
+							break;
+						 }
 					     leaf = (leafnode*)root->lnode;
 					     test = findVarByName(table->table_content,leaf->data.sval->str);
 					       if( test != NULL)
@@ -679,10 +898,13 @@ int  code_recur(treenode *root)
 						/* Minus equal assignment "-=" */
 						/* e.g. x -= 5; */
 						//printf("(-=)\n");
+						if(is_const(root->rnode) == 0){
+							break;
+						}
 					leaf = (leafnode*)root->lnode;
 					test = findVarByName(table->table_content,leaf->data.sval->str);
 					 if( test != NULL)
-				             printf("ldc %d\n" ,test->var_adress );
+				        printf("ldc %d\n" ,test->var_adress );
 				        code_recur(root->lnode);
 				        code_recur(root->rnode);
 				        printf("sub\n");
@@ -693,6 +915,16 @@ int  code_recur(treenode *root)
 						/* Multiply equal assignment "*=" */
 						/* e.g. x *= 5; */
 						//printf("(*=)\n");
+						if(is_const(root->rnode) == 1){
+							break;
+						 }
+						if(is_const(root->rnode) == 0){
+							leaf = (leafnode*)root->lnode;
+							test = findVarByName(table->table_content,leaf->data.sval->str);
+							if( test != NULL)
+								printf("ldc %d\nldc 0\nsto\n" ,test->var_adress);
+							break;
+						}
 					    leaf = (leafnode*)root->lnode;
 					    test = findVarByName(table->table_content,leaf->data.sval->str);
 					    if( test != NULL)
@@ -706,6 +938,9 @@ int  code_recur(treenode *root)
 						/* Divide equal assignment "/=" */
 						/* e.g. x /= 5; */
 						//printf("(/=)\n");
+						if(is_const(root->rnode) == 1){
+							break;
+						 }
 			        	leaf = (leafnode*)root->lnode;
 					test = findVarByName(table->table_content,leaf->data.sval->str);
 					 if( test != NULL)
@@ -796,7 +1031,21 @@ int  code_recur(treenode *root)
 
 					  case PLUS:
 					  	  /* Plus token "+" */
+						  left_result = is_const(root->lnode);
+						  right_result = is_const(root->rnode);
 
+						  if(left_result >= 0 && right_result >= 0){
+							  printf("ldc %d\n",left_result+right_result);
+							  break;
+						  }
+						  if(right_result == 0){
+							  code_recur(root->lnode);
+							  break;
+						  }
+						  if(left_result == 0){
+							  code_recur(root->rnode);
+							  break;
+						  }
 						  code_recur(root->lnode);
 						  code_recur(root->rnode);
 						  printf("add\n");
@@ -806,11 +1055,26 @@ int  code_recur(treenode *root)
 					  	  /* Minus token "-" */
 						if((leafnode*)root->lnode)
 						  {
-						  code_recur(root->lnode);
-						  code_recur(root->rnode);
-						  printf("sub\n");
-						  }
-						  else {
+							  left_result = is_const(root->lnode);
+							  right_result = is_const(root->rnode);
+							  if(left_result >= 0 && right_result >= 0){
+								  printf("ldc %d\n",left_result-right_result);
+								  break;
+							  }
+							  if(right_result == 0 || left_result ==0){
+								  if(right_result == 0){
+									  code_recur(root->lnode);
+									  break;
+								  }else{
+									  code_recur(root->rnode);
+									  printf("neg\n");
+									  break;
+								  }
+							  }
+						     code_recur(root->lnode);
+						     code_recur(root->rnode);
+						     printf("sub\n");
+						  }else {
 							code_recur(root->rnode);
 							printf("neg\n");
 						  }
@@ -818,6 +1082,24 @@ int  code_recur(treenode *root)
 
 					  case DIV:
 					  	  /* Divide token "/" */
+						  left_result = is_const(root->lnode);
+						  right_result = is_const(root->rnode);
+						  if(left_result >= 0 && right_result >= 0){
+							  printf("ldc %d\n",left_result/right_result);
+							  break;
+						  }
+						  if(left_result == 0 ){
+							  printf("ldc 0\n");
+							  break;
+						  }
+						  if(right_result == 1){
+							  if(left_result >= 0)
+								  printf("ldc %d\n",left_result);
+							  else
+								  printf("ldc %d\nind\n", findVarByName(table->table_content,getVarFromTree(root))->var_adress);
+
+							  break;
+						  }
 						  code_recur(root->lnode);
 						  code_recur(root->rnode);
 						  printf("div\n");
@@ -825,6 +1107,38 @@ int  code_recur(treenode *root)
 
 					  case STAR:
 					  	  /* multiply token "*" */
+						  left_result = is_const(root->lnode);
+						  right_result = is_const(root->rnode);
+						  if(left_result == 0 || right_result == 0){
+							  printf("ldc 0\n");
+							  break;
+						  }
+						  if(left_result > 0 && right_result > 0){
+							  printf("ldc %d\n",left_result*right_result);
+							  break;
+						  }
+						  if(left_result == 1 && right_result == 1){
+							  printf("ldc 1\n");
+							  break;
+						  }
+						  if(left_result == 1){
+							  if( right_result >= 0){
+								  printf("ldc %d\n",right_result);
+								  break;
+							  }else{
+								  printf("ldc %d\nind\n",findVarByName(table->table_content,getVarFromTree(root))->var_adress);
+								  break;
+							  }
+						  }
+						  if(right_result == 1){
+							  if( left_result >= 0){
+								  printf("ldc %d\n",left_result);
+								  break;
+							  }else{
+								  printf("ldc %d\nind\n",findVarByName(table->table_content,getVarFromTree(root))->var_adress);
+								  break;
+							  }
+						  }
 						  code_recur(root->lnode);
 						  code_recur(root->rnode);
 						  printf("mul\n");
@@ -832,6 +1146,24 @@ int  code_recur(treenode *root)
 
 					  case AND:
 					  	  /* And token "&&" */
+						  left_result = is_const(root->lnode);
+						  right_result = is_const(root->rnode);
+						  if(left_result >= 0 && right_result >= 0){
+							  printf("ldc %d\n",left_result&&right_result);
+							  break;
+						  }
+						  if(left_result == 0 || right_result == 0){
+							  printf("ldc 0\n");
+							  break;
+						  }
+						  if(left_result == 1 ){
+							  printf("ldc %d\nind\n",findVarByName(table->table_content,getVarFromTree(root))->var_adress);
+							  break;
+						  }
+						  if(right_result == 1){
+							  printf("ldc %d\nind\n",findVarByName(table->table_content,getVarFromTree(root))->var_adress);
+							  break;
+						  }
 						  code_recur(root->lnode);
 						  code_recur(root->rnode);
 						  printf("and\n");
@@ -839,6 +1171,24 @@ int  code_recur(treenode *root)
 
 					  case OR:
 					  	  /* Or token "||" */
+						  left_result = is_const(root->lnode);
+						  right_result = is_const(root->rnode);
+						  if(left_result >= 0 && right_result >= 0){
+							  printf("ldc %d\n",left_result||right_result);
+							  break;
+						  }
+						  if(left_result > 0 || right_result > 0){
+							  printf("ldc 1\n");
+							  break;
+						  }
+						  if(left_result == 0 ){
+							  printf("ldc %d\nind\n",findVarByName(table->table_content,getVarFromTree(root))->var_adress);
+							  break;
+						  }
+						  if(right_result == 0){
+							  printf("ldc %d\nind\n",findVarByName(table->table_content,getVarFromTree(root))->var_adress);
+							  break;
+						  }
 						  code_recur(root->lnode);
 						  code_recur(root->rnode);
 						  printf("or\n");
@@ -853,6 +1203,12 @@ int  code_recur(treenode *root)
 
 					  case GRTR:
 					  	  /* Greater token ">" */
+						  left_result = is_const(root->lnode);
+						  right_result = is_const(root->rnode);
+						  if(left_result >= 0 && right_result >= 0){
+							  printf("ldc %d\n",left_result>right_result);
+							  break;
+						  }
 						  code_recur(root->lnode);
 						  code_recur(root->rnode);
 						  printf("grt\n");
@@ -860,6 +1216,12 @@ int  code_recur(treenode *root)
 
 					  case LESS:
 					  	  /* Less token "<" */
+						  left_result = is_const(root->lnode);
+						  right_result = is_const(root->rnode);
+						  if(left_result >= 0 && right_result >= 0){
+							  printf("ldc %d\n",left_result<right_result);
+							  break;
+						  }
 						  code_recur(root->lnode);
 						  code_recur(root->rnode);
 						  printf("les\n");
@@ -867,6 +1229,12 @@ int  code_recur(treenode *root)
 						  
 					  case EQUAL:
 					  	  /* Equal token "==" */
+						  left_result = is_const(root->lnode);
+						  right_result = is_const(root->rnode);
+						  if(left_result >= 0 && right_result >= 0){
+							  printf("ldc %d\n",left_result == right_result);
+							  break;
+						  }
 						  code_recur(root->lnode);
 						  code_recur(root->rnode);
 						  printf("equ\n");
@@ -874,6 +1242,12 @@ int  code_recur(treenode *root)
 
 					  case NOT_EQ:
 					  	  /* Not equal token "!=" */
+						  left_result = is_const(root->lnode);
+						  right_result = is_const(root->rnode);
+						  if(left_result >= 0 && right_result >= 0){
+							  printf("ldc %d\n",left_result != right_result);
+							  break;
+						  }
 						  code_recur(root->lnode);
 						  code_recur(root->rnode);
 						  printf("neq\n");
@@ -881,6 +1255,12 @@ int  code_recur(treenode *root)
 
 					  case LESS_EQ:
 					  	  /* Less or equal token "<=" */
+						  left_result = is_const(root->lnode);
+						  right_result = is_const(root->rnode);
+						  if(left_result >= 0 && right_result >= 0){
+							  printf("ldc %d\n",left_result<=right_result);
+							  break;
+						  }
 						  code_recur(root->lnode);
 						  code_recur(root->rnode);
 						  printf("leq\n");
@@ -888,6 +1268,12 @@ int  code_recur(treenode *root)
 
 					  case GRTR_EQ:
 					  	  /* Greater or equal token ">=" */
+						  left_result = is_const(root->lnode);
+						  right_result = is_const(root->rnode);
+						  if(left_result >= 0 && right_result >= 0){
+							  printf("ldc %d\n",left_result>=right_result);
+							  break;
+						  }
 						  code_recur(root->lnode);
 						  code_recur(root->rnode);
 						  printf("geq\n");
